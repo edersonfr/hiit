@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HIIT na Esteira - Cronômetro de Intervalos</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HIIT Esteira">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Aplicativo de treino HIIT na esteira com cronômetro de alta visibilidade, instrução por voz e avisos sonoros para controle de tiros e caminhada.">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Dynamic Glowing Orbs -->
+  <div class="bg-glow-orb" id="bgGlowOrb"></div>
+  <div class="bg-glow-orb-2"></div>
+
+  <div id="app-container">
+    
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 512 512">
+            <path d="M 270 140 A 24 24 0 1 1 270 139.9 Z M 230 200 L 280 180 L 320 220 M 250 200 L 200 240 L 160 230 M 250 240 L 220 310 L 170 370 M 230 280 L 300 330 L 340 400" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <h1>HIIT ESTEIRA</h1>
+          <p>Treino de Intervalos</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Sound Toggle -->
+        <button id="btnToggleAudio" class="icon-btn active" title="Alternar Bips Sonoros" aria-label="Alternar Bips Sonoros">
+          <svg id="iconAudioOn" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <svg id="iconAudioOff" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        </button>
+
+        <!-- Voice Toggle -->
+        <button id="btnToggleVoice" class="icon-btn active" title="Alternar Voz em Português" aria-label="Alternar Voz em Português">
+          <svg id="iconVoiceOn" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+          <svg id="iconVoiceOff" viewBox="0 0 24 24" style="display:none;"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6 6V11c0 1.66 1.34 3 3 3 .23 0 .44-.03.65-.08l1.66 1.66c-.71.27-1.48.42-2.31.42-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c1.81-.26 3.44-1.15 4.63-2.47L19.73 21 21 19.73 4.27 3z"/></svg>
+        </button>
+
+        <!-- 3-Dots Menu Button -->
+        <div class="dropdown-wrapper">
+          <button id="btnMenuDots" class="icon-btn" title="Menu de Opções" aria-label="Abrir Menu">
+            <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </button>
+          
+          <div id="dropdownMenu" class="dropdown-menu">
+            <button class="dropdown-item" id="menuItemHome">
+              <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+              <span>Início / Treino</span>
+            </button>
+            <button class="dropdown-item" id="menuItemTips">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              <span>Dicas HIIT</span>
+            </button>
+            <button class="dropdown-item" id="menuItemHistory">
+              <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+              <span>Histórico de Treinos</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: WORKOUT SELECTION -->
+    <main id="screenSelect" class="screen active">
+      <div class="section-title">Escolha seu Nível de Treino</div>
+
+      <!-- Option 1: Iniciante -->
+      <div class="preset-card selected" id="cardIniciante" data-preset="iniciante" style="--preset-theme-color: #10b981; --preset-glow: rgba(16, 185, 129, 0.25);">
+        <div class="preset-badge badge-iniciante">🟢 Nível Iniciante</div>
+        <div class="preset-header">
+          <div>
+            <div class="preset-title">Iniciante (30s / 60s)</div>
+            <div class="preset-time">Duração total: ~17 a 20 minutos</div>
+          </div>
+        </div>
+        <div class="preset-details">
+          <div class="detail-item">
+            <span>Tiro Intenso</span>
+            <span>30 seg</span>
+          </div>
+          <div class="detail-item">
+            <span>Caminhada</span>
+            <span>1 min (60s)</span>
+          </div>
+          <div class="detail-item">
+            <span>Repetições</span>
+            <span>8 a 10x</span>
+          </div>
+        </div>
+        <div class="preset-options">
+          <label for="repsIniciante">Repetições:</label>
+          <select id="repsIniciante" onclick="event.stopPropagation()">
+            <option value="8">8 Séries (17 min)</option>
+            <option value="9">9 Séries (18.5 min)</option>
+            <option value="10" selected>10 Séries (20 min)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Option 2: Intermediário -->
+      <div class="preset-card" id="cardIntermediario" data-preset="intermediario" style="--preset-theme-color: #f59e0b; --preset-glow: rgba(245, 158, 11, 0.25);">
+        <div class="preset-badge badge-intermediario">🟡 Nível Intermediário</div>
+        <div class="preset-header">
+          <div>
+            <div class="preset-title">Intermediário (30s / 45s ou 30s)</div>
+            <div class="preset-time">Duração total: ~17 a 22 minutos</div>
+          </div>
+        </div>
+        <div class="preset-details">
+          <div class="detail-item">
+            <span>Tiro Forte</span>
+            <span>30 seg</span>
+          </div>
+          <div class="detail-item">
+            <span>Caminhada</span>
+            <span id="labelRestIntermediario">45 seg</span>
+          </div>
+          <div class="detail-item">
+            <span>Repetições</span>
+            <span>10 a 12x</span>
+          </div>
+        </div>
+        <div class="preset-options">
+          <label for="restIntermediario">Descanso:</label>
+          <select id="restIntermediario" onclick="event.stopPropagation()">
+            <option value="45" selected>45 segundos</option>
+            <option value="30">30 segundos</option>
+          </select>
+
+          <label for="repsIntermediario" style="margin-left: 8px;">Séries:</label>
+          <select id="repsIntermediario" onclick="event.stopPropagation()">
+            <option value="10" selected>10 Séries</option>
+            <option value="11">11 Séries</option>
+            <option value="12">12 Séries</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Option 3: Avançado -->
+      <div class="preset-card" id="cardAvancado" data-preset="avancado" style="--preset-theme-color: #ef4444; --preset-glow: rgba(239, 68, 68, 0.25);">
+        <div class="preset-badge badge-avancado">🔴 Nível Avançado</div>
+        <div class="preset-header">
+          <div>
+            <div class="preset-title">Avançado (40s / 20s)</div>
+            <div class="preset-time">Duração total: ~15 a 20 minutos</div>
+          </div>
+        </div>
+        <div class="preset-details">
+          <div class="detail-item">
+            <span>Tiro Intenso</span>
+            <span>40 seg</span>
+          </div>
+          <div class="detail-item">
+            <span>Caminhada</span>
+            <span>20 seg</span>
+          </div>
+          <div class="detail-item">
+            <span>Repetições</span>
+            <span>10 a 15x</span>
+          </div>
+        </div>
+        <div class="preset-options">
+          <label for="repsAvancado">Repetições:</label>
+          <select id="repsAvancado" onclick="event.stopPropagation()">
+            <option value="10">10 Séries (15 min)</option>
+            <option value="12" selected>12 Séries (17 min)</option>
+            <option value="15">15 Séries (20 min)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Option 4: Personalizado -->
+      <div class="preset-card" id="cardCustom" data-preset="custom" style="--preset-theme-color: #a855f7; --preset-glow: rgba(168, 85, 247, 0.25);">
+        <div class="preset-badge badge-custom">⚙️ Treino Personalizado</div>
+        <div class="preset-title">Configuração Livre</div>
+        <div class="custom-form">
+          <div class="input-group">
+            <label for="customWarmup">Aquecimento (min)</label>
+            <input type="number" id="customWarmup" value="5" min="1" max="15" onclick="event.stopPropagation()">
+          </div>
+          <div class="input-group">
+            <label for="customHigh">Tiro Rápido (seg)</label>
+            <input type="number" id="customHigh" value="30" min="10" max="180" onclick="event.stopPropagation()">
+          </div>
+          <div class="input-group">
+            <label for="customLow">Caminhada (seg)</label>
+            <input type="number" id="customLow" value="45" min="10" max="180" onclick="event.stopPropagation()">
+          </div>
+          <div class="input-group">
+            <label for="customReps">Nº Repetições</label>
+            <input type="number" id="customReps" value="10" min="1" max="30" onclick="event.stopPropagation()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo de Teste Rápido -->
+      <div class="quick-test-bar">
+        <span>⚡ Modo Teste Rápido (Acelerar 10x)</span>
+        <label class="switch">
+          <input type="checkbox" id="chkQuickTest">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Big Start Button -->
+      <button id="btnStartWorkout" class="btn-primary">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        INICIAR TREINO NA ESTEIRA
+      </button>
+    </main>
+
+    <!-- SCREEN 2: ACTIVE WORKOUT TIMER -->
+    <main id="screenActive" class="screen">
+      <div class="active-workout-wrapper">
+        
+        <!-- Phase Banner -->
+        <div class="phase-banner" id="phaseBanner">
+          <div class="phase-info">
+            <span class="phase-icon" id="phaseIcon">🟢</span>
+            <div>
+              <div class="phase-title-text" id="phaseTitle">AQUECIMENTO</div>
+              <div class="phase-subtext" id="phaseSubtext">Caminhada leve a moderada na esteira</div>
+            </div>
+          </div>
+          <div class="round-pill" id="roundPill">SÉRIE --/--</div>
+        </div>
+
+        <!-- Giant Timer Display -->
+        <div class="timer-container">
+          <svg class="progress-ring">
+            <circle class="progress-ring-bg" cx="135" cy="135" r="120" fill="transparent" />
+            <circle class="progress-ring-circle" id="progressCircle" cx="135" cy="135" r="120" fill="transparent" />
+          </svg>
+          <div class="timer-inner">
+            <div class="time-remaining" id="displayIntervalTime">05:00</div>
+            <div class="time-label" id="displayTimerLabel">TEMPO RESTANTE</div>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="workout-stats-row">
+          <div class="stat-box">
+            <div class="stat-value" id="displayTotalElapsed">00:00</div>
+            <div class="stat-title">Tempo Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="displaySuggestedPace">MODERADA</div>
+            <div class="stat-title">Velocidade</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="displayNextPhase">CORRIDA</div>
+            <div class="stat-title">Próxima Fase</div>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="control-buttons-row">
+          <button id="btnPauseResume" class="btn-ctrl btn-pause">
+            <svg id="iconPause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <svg id="iconPlay" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+            <span id="labelPauseResume">PAUSAR</span>
+          </button>
+
+          <button id="btnSkipStage" class="btn-ctrl btn-skip" title="Pular para a Próxima Fase" aria-label="Pular Fase">
+            <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+
+          <button id="btnStopWorkout" class="btn-ctrl btn-stop" title="Encerrar Treino" aria-label="Encerrar Treino">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+
+        <!-- Dynamic Treadmill Tip Bar -->
+        <div class="treadmill-tip-box" id="treadmillTipBox">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span id="treadmillTipText">Comece com a esteira plana (inclinação 0% a 2%). Postura ereta e abdômen contraído!</span>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- SCREEN 3: WORKOUT SUMMARY / CONGRATS -->
+    <main id="screenSummary" class="screen">
+      <div class="congrats-card">
+        <div class="trophy-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 0 0 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+        </div>
+        <div class="congrats-title">PARABÉNS! TREINO CONCLUÍDO!</div>
+        <div class="congrats-subtitle" id="summarySubtext">Você completou seu treino HIIT com sucesso na esteira.</div>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-val" id="summaryTime">00:00</div>
+            <div class="summary-lbl">Tempo Total</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val" id="summaryReps">0/0</div>
+            <div class="summary-lbl">Séries de Tiro</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val" id="summaryCalories">~180 kcal</div>
+            <div class="summary-lbl">Est. Calórica</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-val" id="summaryPreset">Iniciante</div>
+            <div class="summary-lbl">Nível Concluído</div>
+          </div>
+        </div>
+
+        <button id="btnNewWorkout" class="btn-primary" style="margin-top: 10px;">
+          INICIAR NOVO TREINO
+        </button>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL: DICAS DE TREINO HIIT -->
+  <div class="modal-overlay" id="modalTips">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Dicas Importantes HIIT</div>
+        <button class="icon-btn" id="btnCloseTips" aria-label="Fechar Dicas">&times;</button>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🟢</div>
+        <div class="tip-text">
+          <h4>1. Aquecimento e Desaceleração</h4>
+          <p>Sempre faça os 5 minutos de caminhada no início (aquecimento) e 5 minutos no final. Isso previne lesões e evita tonturas repentinas.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🔴</div>
+        <div class="tip-text">
+          <h4>2. Parte Intensa (Tiro)</h4>
+          <p>Na parte de alta intensidade, você deve ficar bastante ofegante, com dificuldade de conversar. É essa intensidade que acelera o metabolismo!</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📐</div>
+        <div class="tip-text">
+          <h4>3. Inclinação da Esteira</h4>
+          <p>Comece sempre sem inclinação (0% ou no máximo 1 a 2%). Foque primeiro em ajustar as velocidades confortáveis de caminhada e corrida.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧘</div>
+        <div class="tip-text">
+          <h4>4. Postura Correta</h4>
+          <p>Mantenha a postura ereta, olhe para a frente (não para os pés) e mantenha o abdômen contraído durante os tiros de corrida.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">⚠️</div>
+        <div class="tip-text">
+          <h4>5. Escute seu Corpo</h4>
+          <p>Se sentir tontura, dor forte ou mal-estar excessivo, reduza a velocidade imediatamente para caminhada leve ou pare o treino.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📅</div>
+        <div class="tip-text">
+          <h4>6. Frequência Semanal</h4>
+          <p>O HIIT é intenso! O recomendado é realizar de 2 a 3 vezes por semana, intercalando com dias de descanso ou musculação.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: HISTÓRICO DE TREINOS -->
+  <div class="modal-overlay" id="modalHistory">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Histórico de Treinos</div>
+        <button class="icon-btn" id="btnCloseHistory" aria-label="Fechar Histórico">&times;</button>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <!-- Dynamic content via JS -->
+      </div>
+      
+      <button id="btnClearHistory" class="icon-btn" style="width: 100%; border-radius: 12px; font-weight: 600; font-size: 0.85rem; padding: 10px; margin-top: 10px;">
+        Limpar Histórico
+      </button>
+    </div>
+  </div>
+
+  <!-- Script Application -->
+  <script src="app.js"></script>
+</body>
+</html>
