@@ -326,9 +326,63 @@
           </div>
         </div>
 
-        <button id="btnNewWorkout" class="btn-primary" style="margin-top: 10px;">
-          INICIAR NOVO TREINO
+        <div class="summary-actions">
+          <button id="btnShareSummary" class="btn-primary btn-share" style="margin-top: 10px; background: linear-gradient(135deg, #8b5cf6, #ec4899);">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+            COMPARTILHAR NO INSTAGRAM / WHATSAPP
+          </button>
+          
+          <button id="btnNewWorkout" class="btn-primary" style="margin-top: 8px;">
+            INICIAR NOVO TREINO
+          </button>
+          
+          <button id="btnGoToHistory" class="btn-secondary" style="margin-top: 8px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            VER HISTÓRICO COMPLETO
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- SCREEN 4: DEDICATED HISTORY SCREEN -->
+    <main id="screenHistory" class="screen">
+      <div class="history-screen-header">
+        <button id="btnBackFromHistory" class="icon-btn" title="Voltar" aria-label="Voltar">
+          <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         </button>
+        <div>
+          <div class="history-screen-title">SEU HISTÓRICO</div>
+          <div class="history-screen-sub">Acompanhe sua evolução no HIIT</div>
+        </div>
+      </div>
+
+      <!-- History Stats Totals -->
+      <div class="history-totals-grid">
+        <div class="total-card">
+          <div class="total-val" id="totalWorkoutsCount">0</div>
+          <div class="total-lbl">Treinos Concluídos</div>
+        </div>
+        <div class="total-card">
+          <div class="total-val" id="totalCaloriesCount">0</div>
+          <div class="total-lbl">Calorias Queimadas</div>
+        </div>
+        <div class="total-card">
+          <div class="total-val" id="totalMinutesCount">0 min</div>
+          <div class="total-lbl">Tempo Total HIIT</div>
+        </div>
+      </div>
+
+      <!-- History Actions Bar -->
+      <div class="history-actions-bar">
+        <span>Registro de Treinos</span>
+        <button id="btnClearHistoryScreen" class="btn-text-danger">
+          Limpar Histórico
+        </button>
+      </div>
+
+      <!-- History Cards Container -->
+      <div id="historyCardsContainer" class="history-cards-container">
+        <!-- Dynamic history cards inserted here -->
       </div>
     </main>
 
@@ -392,21 +446,38 @@
     </div>
   </div>
 
-  <!-- MODAL: HISTÓRICO DE TREINOS -->
-  <div class="modal-overlay" id="modalHistory">
-    <div class="modal-content">
+  <!-- MODAL: COMPARTILHAR TREINO (INSTAGRAM / WHATSAPP) -->
+  <div class="modal-overlay" id="modalShareCard">
+    <div class="modal-content" style="text-align: center; max-width: 400px;">
       <div class="modal-header">
-        <div class="modal-title">Histórico de Treinos</div>
-        <button class="icon-btn" id="btnCloseHistory" aria-label="Fechar Histórico">&times;</button>
+        <div class="modal-title">Compartilhar Conquista 🚀</div>
+        <button class="icon-btn" id="btnCloseShareCard" aria-label="Fechar Compartilhamento">&times;</button>
       </div>
 
-      <div class="history-list" id="historyList">
-        <!-- Dynamic content via JS -->
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+        Seu cartão de treino pronto para Instagram Stories, WhatsApp e redes sociais!
       </div>
-      
-      <button id="btnClearHistory" class="icon-btn" style="width: 100%; border-radius: 12px; font-weight: 600; font-size: 0.85rem; padding: 10px; margin-top: 10px;">
-        Limpar Histórico
-      </button>
+
+      <!-- Generated Canvas Preview -->
+      <div class="canvas-preview-box">
+        <canvas id="shareCanvas" width="540" height="960" style="width: 100%; max-width: 270px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></canvas>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 10px;">
+        <button id="btnNativeShare" class="btn-primary" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); margin-top: 0; margin-bottom: 0;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          COMPARTILHAR NO CELULAR
+        </button>
+
+        <button id="btnDownloadCard" class="btn-secondary">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          BAIXAR IMAGEM (STORIES)
+        </button>
+
+        <button id="btnCopyText" class="btn-secondary" style="background: rgba(255,255,255,0.06);">
+          📋 COPIAR TEXTO DO TREINO
+        </button>
+      </div>
     </div>
   </div>
 

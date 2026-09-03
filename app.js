@@ -478,38 +478,305 @@ function resetTimerState() {
   document.getElementById('labelPauseResume').textContent = 'PAUSAR';
 }
 
-// LocalStorage History Management
+// LocalStorage History & Dedicated Screen
+let lastWorkoutData = null; // Store last completed workout for quick sharing
+
 function saveHistoryItem(item) {
   state.workoutHistory.unshift(item);
-  if (state.workoutHistory.length > 20) state.workoutHistory.pop(); // Keep max 20
+  if (state.workoutHistory.length > 50) state.workoutHistory.pop(); // Keep max 50
   localStorage.setItem('hiit_history', JSON.stringify(state.workoutHistory));
+  lastWorkoutData = item;
 }
 
-function renderHistory() {
-  const container = document.getElementById('historyList');
-  if (state.workoutHistory.length === 0) {
-    container.innerHTML = `<div class="empty-history">Nenhum treino registrado ainda.<br>Complete seu primeiro HIIT na esteira!</div>`;
+function renderHistoryScreen() {
+  const container = document.getElementById('historyCardsContainer');
+  const history = state.workoutHistory;
+
+  // Compute totals
+  const totalCount = history.length;
+  let totalCalories = 0;
+  let totalSecs = 0;
+
+  history.forEach(h => {
+    totalCalories += (h.calories || 0);
+    totalSecs += (h.durationSec || 0);
+  });
+
+  document.getElementById('totalWorkoutsCount').textContent = totalCount;
+  document.getElementById('totalCaloriesCount').textContent = totalCalories > 0 ? `${totalCalories} kcal` : '0 kcal';
+  document.getElementById('totalMinutesCount').textContent = `${Math.round(totalSecs / 60)} min`;
+
+  if (history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-history" style="padding: 40px 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 8px;">🏃💨</div>
+        <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);">Nenhum treino registrado ainda.</div>
+        <div style="font-size: 0.82rem; margin-top: 4px;">Escolha um nível e comece seu primeiro HIIT na esteira!</div>
+      </div>
+    `;
     return;
   }
 
-  container.innerHTML = state.workoutHistory.map(item => `
-    <div class="history-item">
-      <div class="history-info">
-        <span class="history-name">HIIT ${item.preset} (${item.reps} tiros)</span>
-        <span class="history-date">${item.date}</span>
+  const badgeClasses = {
+    'Iniciante': 'badge-iniciante',
+    'Intermediário': 'badge-intermediario',
+    'Avançado': 'badge-avancado',
+    'Personalizado': 'badge-custom'
+  };
+
+  container.innerHTML = history.map((item, index) => `
+    <div class="history-card-item">
+      <div class="history-card-top">
+        <span class="preset-badge ${badgeClasses[item.preset] || 'badge-iniciante'}">
+          ${item.preset} (${item.reps} tiros)
+        </span>
+        <span class="history-card-date">${item.date}</span>
       </div>
-      <div class="history-meta">
-        ${formatTime(item.durationSec)}
+
+      <div class="history-card-body">
+        <div>
+          <div class="card-stat-val">${formatTime(item.durationSec)}</div>
+          <div class="card-stat-lbl">Tempo</div>
+        </div>
+        <div>
+          <div class="card-stat-val">${item.reps}x</div>
+          <div class="card-stat-lbl">Séries</div>
+        </div>
+        <div>
+          <div class="card-stat-val" style="color: #10b981;">~${item.calories} kcal</div>
+          <div class="card-stat-lbl">Calorias</div>
+        </div>
+      </div>
+
+      <div class="history-card-footer">
+        <button class="btn-share-mini" onclick="handleShareItemIndex(${index})">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          Compartilhar
+        </button>
       </div>
     </div>
   `).join('');
+}
+
+function handleShareItemIndex(index) {
+  const item = state.workoutHistory[index];
+  if (item) {
+    openShareModal(item);
+  }
 }
 
 function clearHistory() {
   if (confirm("Deseja apagar todo o histórico de treinos?")) {
     state.workoutHistory = [];
     localStorage.removeItem('hiit_history');
-    renderHistory();
+    renderHistoryScreen();
+  }
+}
+
+// SOCIAL MEDIA SHARE CANVAS & NATIVE SHARE
+let currentShareWorkout = null;
+
+function openShareModal(workout) {
+  currentShareWorkout = workout || lastWorkoutData || {
+    preset: 'Intermediário',
+    durationSec: 1200,
+    reps: 10,
+    calories: 220,
+    date: new Date().toLocaleDateString('pt-BR')
+  };
+
+  drawShareCanvas(currentShareWorkout);
+  document.getElementById('modalShareCard').classList.add('active');
+}
+
+function drawShareCanvas(workout) {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width; // 540
+  const h = canvas.height; // 960
+
+  // 1. Dark Gradient Background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+  bgGrad.addColorStop(0, '#0f172a');
+  bgGrad.addColorStop(0.5, '#1e1b4b');
+  bgGrad.addColorStop(1, '#090d16');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // 2. Glowing Orbs
+  ctx.save();
+  ctx.shadowColor = '#ef4444';
+  ctx.shadowBlur = 80;
+  ctx.beginPath();
+  ctx.arc(100, 150, 120, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+  ctx.fill();
+
+  ctx.shadowColor = '#10b981';
+  ctx.beginPath();
+  ctx.arc(440, 750, 140, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+  ctx.fill();
+  ctx.restore();
+
+  // 3. Card Frame
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(30, 40, w - 60, h - 80, 24);
+  ctx.fill();
+  ctx.stroke();
+
+  // 4. Header Branding
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 32px Outfit, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('HIIT NA ESTEIRA ⚡', w / 2, 110);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '600 18px Inter, sans-serif';
+  ctx.fillText('TREINO CONCLUÍDO COM SUCESSO', w / 2, 145);
+
+  // Divider Line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.beginPath();
+  ctx.moveTo(70, 175);
+  ctx.lineTo(w - 70, 175);
+  ctx.stroke();
+
+  // 5. Large Flame / Trophy Icon Circle
+  ctx.save();
+  ctx.shadowColor = '#f59e0b';
+  ctx.shadowBlur = 30;
+  const iconGrad = ctx.createLinearGradient(w/2 - 55, 200, w/2 + 55, 310);
+  iconGrad.addColorStop(0, '#ef4444');
+  iconGrad.addColorStop(1, '#f59e0b');
+  ctx.fillStyle = iconGrad;
+  ctx.beginPath();
+  ctx.arc(w / 2, 255, 55, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Flame Emoji Text inside circle
+  ctx.font = '54px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔥', w / 2, 273);
+
+  // 6. Level Badge
+  ctx.fillStyle = '#10b981';
+  ctx.font = '800 24px Outfit, sans-serif';
+  ctx.fillText(`NÍVEL ${workout.preset.toUpperCase()}`, w / 2, 355);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '500 16px Inter, sans-serif';
+  ctx.fillText(workout.date || 'Hoje', w / 2, 385);
+
+  // 7. Big Stats Box Container
+  const statBoxY = 430;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(60, statBoxY, w - 120, 320, 20);
+  ctx.fill();
+  ctx.stroke();
+
+  // Stat Item 1: Duração
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 48px Outfit, sans-serif';
+  ctx.fillText(formatTime(workout.durationSec), w / 2, statBoxY + 70);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '600 16px Inter, sans-serif';
+  ctx.fillText('DURAÇÃO TOTAL', w / 2, statBoxY + 95);
+
+  // Stat Item 2: Séries & Calorias
+  const col1X = 170;
+  const col2X = 370;
+  const row2Y = statBoxY + 180;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 36px Outfit, sans-serif';
+  ctx.fillText(`${workout.reps}x`, col1X, row2Y);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '600 14px Inter, sans-serif';
+  ctx.fillText('SÉRIES DE TIRO', col1X, row2Y + 24);
+
+  ctx.fillStyle = '#10b981';
+  ctx.font = '800 36px Outfit, sans-serif';
+  ctx.fillText(`~${workout.calories}`, col2X, row2Y);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '600 14px Inter, sans-serif';
+  ctx.fillText('EST. CALORIAS', col2X, row2Y + 24);
+
+  // 8. Motivational Quote
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = 'italic 600 20px Inter, sans-serif';
+  ctx.fillText('"Meta cumprida na esteira! 🏃💨"', w / 2, h - 130);
+
+  // 9. Watermark Footer
+  ctx.fillStyle = '#64748b';
+  ctx.font = '700 14px Inter, sans-serif';
+  ctx.fillText('GERADO PELO HIIT ESTEIRA APP', w / 2, h - 70);
+}
+
+// Native Share or Image Share
+async function shareWorkoutNative() {
+  const w = currentShareWorkout;
+  if (!w) return;
+
+  const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino #Fitness`;
+
+  const canvas = document.getElementById('shareCanvas');
+  
+  if (navigator.share && canvas) {
+    try {
+      // Try converting canvas to Blob image for native share
+      canvas.toBlob(async (blob) => {
+        if (blob && navigator.canShare && navigator.canShare({ files: [new File([blob], 'hiit_treino.png', { type: 'image/png' })] })) {
+          const file = new File([blob], 'hiit_treino.png', { type: 'image/png' });
+          await navigator.share({
+            title: 'Meu Treino HIIT na Esteira',
+            text: shareText,
+            files: [file]
+          });
+        } else {
+          // Fallback to text share
+          await navigator.share({
+            title: 'Meu Treino HIIT na Esteira',
+            text: shareText
+          });
+        }
+      });
+    } catch (err) {
+      console.log('Share canceled or failed:', err);
+    }
+  } else {
+    // Copy text fallback
+    copyWorkoutText();
+  }
+}
+
+function downloadShareImage() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const image = canvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = `hiit_treino_${Date.now()}.png`;
+  link.href = image;
+  link.click();
+}
+
+function copyWorkoutText() {
+  const w = currentShareWorkout;
+  if (!w) return;
+  const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino #Fitness`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareText).then(() => {
+      alert("Texto do treino copiado! Cole no Instagram Stories ou WhatsApp.");
+    });
   }
 }
 
@@ -578,46 +845,55 @@ function initApp() {
 
   // Modals & Menu Navigation
   const modalTips = document.getElementById('modalTips');
-  const modalHistory = document.getElementById('modalHistory');
+  const modalShareCard = document.getElementById('modalShareCard');
 
-  const menuItemHome = document.getElementById('menuItemHome');
-  if (menuItemHome) {
-    menuItemHome.addEventListener('click', () => {
-      dropdownMenu.classList.remove('active');
-      if (!state.isRunning) showScreen('screenSelect');
-      else showScreen('screenActive');
-    });
-  }
+  document.getElementById('menuItemHome').addEventListener('click', () => {
+    dropdownMenu.classList.remove('active');
+    if (!state.isRunning) showScreen('screenSelect');
+    else showScreen('screenActive');
+  });
 
-  const menuItemTips = document.getElementById('menuItemTips');
-  if (menuItemTips) {
-    menuItemTips.addEventListener('click', () => {
-      dropdownMenu.classList.remove('active');
-      modalTips.classList.add('active');
-    });
-  }
+  document.getElementById('menuItemTips').addEventListener('click', () => {
+    dropdownMenu.classList.remove('active');
+    modalTips.classList.add('active');
+  });
 
-  const menuItemHistory = document.getElementById('menuItemHistory');
-  if (menuItemHistory) {
-    menuItemHistory.addEventListener('click', () => {
-      dropdownMenu.classList.remove('active');
-      renderHistory();
-      modalHistory.classList.add('active');
-    });
-  }
+  document.getElementById('menuItemHistory').addEventListener('click', () => {
+    dropdownMenu.classList.remove('active');
+    renderHistoryScreen();
+    showScreen('screenHistory');
+  });
+
+  document.getElementById('btnGoToHistory').addEventListener('click', () => {
+    renderHistoryScreen();
+    showScreen('screenHistory');
+  });
+
+  document.getElementById('btnBackFromHistory').addEventListener('click', () => {
+    showScreen('screenSelect');
+  });
+
+  document.getElementById('btnClearHistoryScreen').addEventListener('click', clearHistory);
+
+  // Share Actions
+  document.getElementById('btnShareSummary').addEventListener('click', () => {
+    openShareModal(lastWorkoutData);
+  });
+
+  document.getElementById('btnCloseShareCard').addEventListener('click', () => {
+    modalShareCard.classList.remove('active');
+  });
+
+  document.getElementById('btnNativeShare').addEventListener('click', shareWorkoutNative);
+  document.getElementById('btnDownloadCard').addEventListener('click', downloadShareImage);
+  document.getElementById('btnCopyText').addEventListener('click', copyWorkoutText);
 
   document.getElementById('btnCloseTips').addEventListener('click', () => {
     modalTips.classList.remove('active');
   });
 
-  document.getElementById('btnCloseHistory').addEventListener('click', () => {
-    modalHistory.classList.remove('active');
-  });
-
-  document.getElementById('btnClearHistory').addEventListener('click', clearHistory);
-
   // Close Modals on Overlay Click
-  [modalTips, modalHistory].forEach(m => {
+  [modalTips, modalShareCard].forEach(m => {
     m.addEventListener('click', (e) => {
       if (e.target === m) m.classList.remove('active');
     });
@@ -631,5 +907,9 @@ function initApp() {
   }
 }
 
+// Make handleShareItemIndex accessible globally for inline onclick
+window.handleShareItemIndex = handleShareItemIndex;
+
 // Run on DOM Content Loaded
 document.addEventListener('DOMContentLoaded', initApp);
+
