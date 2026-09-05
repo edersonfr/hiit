@@ -1,0 +1,10 @@
+# Agent Customizations & Skills
+.agents/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE configuration
+.vscode/
+.idea/
