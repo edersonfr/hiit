@@ -328,9 +328,10 @@ function showScreen(screenId) {
 
   // Update tabs if Home/Select screen
   if (screenId === 'screenSelect') {
-    document.getElementById('tabHome').classList.add('active');
-    document.getElementById('tabTips').classList.remove('active');
-    document.getElementById('tabHistory').classList.remove('active');
+    const tabHome = document.getElementById('navItemHome');
+    if (tabHome) tabHome.classList.add('active');
+    const tabHistory = document.getElementById('navItemHistory');
+    if (tabHistory) tabHistory.classList.remove('active');
   }
 }
 
@@ -1166,7 +1167,6 @@ function initApp() {
 
   // Floating Bottom Navigation Bar Handlers
   const navItemHome = document.getElementById('navItemHome');
-  const navItemTips = document.getElementById('navItemTips');
   const navItemHistory = document.getElementById('navItemHistory');
   const btnNavStartWorkout = document.getElementById('btnNavStartWorkout');
   const btnHeaderHistory = document.getElementById('btnHeaderHistory');
@@ -1176,12 +1176,6 @@ function initApp() {
       updateNavTabs('navItemHome');
       if (!state.isRunning) showScreen('screenSelect');
       else showScreen('screenActive');
-    });
-  }
-
-  if (navItemTips) {
-    navItemTips.addEventListener('click', () => {
-      document.getElementById('modalTips').classList.add('active');
     });
   }
 
@@ -1259,27 +1253,27 @@ function initApp() {
   }
 
   // Modals & Menu Navigation
-  const modalTips = document.getElementById('modalTips');
   const modalShareCard = document.getElementById('modalShareCard');
 
-  document.getElementById('menuItemHome').addEventListener('click', () => {
-    dropdownMenu.classList.remove('active');
-    updateNavTabs('navItemHome');
-    if (!state.isRunning) showScreen('screenSelect');
-    else showScreen('screenActive');
-  });
+  const menuItemHome = document.getElementById('menuItemHome');
+  if (menuItemHome) {
+    menuItemHome.addEventListener('click', () => {
+      dropdownMenu.classList.remove('active');
+      updateNavTabs('navItemHome');
+      if (!state.isRunning) showScreen('screenSelect');
+      else showScreen('screenActive');
+    });
+  }
 
-  document.getElementById('menuItemTips').addEventListener('click', () => {
-    dropdownMenu.classList.remove('active');
-    modalTips.classList.add('active');
-  });
-
-  document.getElementById('menuItemHistory').addEventListener('click', () => {
-    dropdownMenu.classList.remove('active');
-    updateNavTabs('navItemHistory');
-    renderHistoryScreen();
-    showScreen('screenHistory');
-  });
+  const menuItemHistory = document.getElementById('menuItemHistory');
+  if (menuItemHistory) {
+    menuItemHistory.addEventListener('click', () => {
+      dropdownMenu.classList.remove('active');
+      updateNavTabs('navItemHistory');
+      renderHistoryScreen();
+      showScreen('screenHistory');
+    });
+  }
 
   document.getElementById('btnGoToHistory').addEventListener('click', () => {
     updateNavTabs('navItemHistory');
@@ -1307,16 +1301,12 @@ function initApp() {
   document.getElementById('btnDownloadCard').addEventListener('click', downloadShareImage);
   document.getElementById('btnCopyText').addEventListener('click', copyWorkoutText);
 
-  document.getElementById('btnCloseTips').addEventListener('click', () => {
-    modalTips.classList.remove('active');
-  });
-
   // Close Modals on Overlay Click
-  [modalTips, modalShareCard].forEach(m => {
-    m.addEventListener('click', (e) => {
-      if (e.target === m) m.classList.remove('active');
+  if (modalShareCard) {
+    modalShareCard.addEventListener('click', (e) => {
+      if (e.target === modalShareCard) modalShareCard.classList.remove('active');
     });
-  });
+  }
 
   // Render Dashboard Metrics & Sparkline
   updateDashboardMetrics();
