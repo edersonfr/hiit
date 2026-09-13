@@ -30,15 +30,13 @@
     
     <!-- App Header -->
     <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 512 512">
-            <path d="M 270 140 A 24 24 0 1 1 270 139.9 Z M 230 200 L 280 180 L 320 220 M 250 200 L 200 240 L 160 230 M 250 240 L 220 310 L 170 370 M 230 280 L 300 330 L 340 400" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <div class="user-greeting">
+        <div class="user-avatar">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
-        <div class="brand-title">
-          <h1>HIIT ESTEIRA</h1>
-          <p>Treino de Intervalos</p>
+        <div>
+          <div class="greeting-sub">Olá, Atleta! 👋</div>
+          <div class="greeting-main">Iniciar Treino Agora!</div>
         </div>
       </div>
 
@@ -79,12 +77,68 @@
       </div>
     </header>
 
-    <!-- SCREEN 1: WORKOUT SELECTION -->
+    <!-- SCREEN 1: WORKOUT SELECTION & DASHBOARD -->
     <main id="screenSelect" class="screen active">
-      <div class="section-title">Escolha seu Nível de Treino</div>
+      
+      <!-- 1. Hero Recent Activity Card -->
+      <div class="hero-activity-card">
+        <div class="activity-info">
+          <div class="activity-label">Atividade Recente</div>
+          <div class="activity-metric-big" id="heroDistance">8,31 KM</div>
+          <div class="activity-submetric" id="heroCalories">313 Calorias</div>
+        </div>
+        <div class="activity-chart">
+          <canvas id="heroSparklineCanvas" width="140" height="70"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Dark Weekly / History Summary Card (Matching Attached UI) -->
+      <div class="dark-record-card">
+        <div class="dark-record-header">
+          <span class="dark-record-title">Registro do Histórico!</span>
+          <button class="dark-record-badge" id="btnHeaderHistory">Detalhes</button>
+        </div>
+        <div class="dark-record-grid">
+          <div class="dark-record-col">
+            <div class="dark-col-label">Treinos</div>
+            <div class="dark-col-val" id="darkStatWorkouts">0</div>
+          </div>
+          <div class="dark-col-divider"></div>
+          <div class="dark-record-col">
+            <div class="dark-col-label">Tempo</div>
+            <div class="dark-col-val" id="darkStatTime">0m</div>
+          </div>
+          <div class="dark-col-divider"></div>
+          <div class="dark-record-col">
+            <div class="dark-col-label">Distância</div>
+            <div class="dark-col-val" id="darkStatDistance">0.0 KM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Level Selector Chips (Matching Attached UI) -->
+      <div class="section-title">Modos de Treino</div>
+      <div class="level-chips-scroll">
+        <div class="level-chip active" data-preset="iniciante">
+          <div class="chip-avatar chip-iniciante">🟢</div>
+          <span>Iniciante</span>
+        </div>
+        <div class="level-chip" data-preset="intermediario">
+          <div class="chip-avatar chip-intermediario">🟡</div>
+          <span>Intermediário</span>
+        </div>
+        <div class="level-chip" data-preset="avancado">
+          <div class="chip-avatar chip-avancado">🔴</div>
+          <span>Avançado</span>
+        </div>
+        <div class="level-chip" data-preset="custom">
+          <div class="chip-avatar chip-custom">⚙️</div>
+          <span>Livre</span>
+        </div>
+      </div>
 
       <!-- Option 1: Iniciante -->
-      <div class="preset-card selected" id="cardIniciante" data-preset="iniciante" style="--preset-theme-color: #10b981; --preset-glow: rgba(16, 185, 129, 0.25);">
+      <div class="preset-card selected" id="cardIniciante" data-preset="iniciante" style="--preset-theme-color: #10b981; --preset-glow: rgba(16, 185, 129, 0.15);">
         <div class="preset-badge badge-iniciante">🟢 Nível Iniciante</div>
         <div class="preset-header">
           <div>
@@ -130,7 +184,7 @@
       </div>
 
       <!-- Option 2: Intermediário -->
-      <div class="preset-card" id="cardIntermediario" data-preset="intermediario" style="--preset-theme-color: #f59e0b; --preset-glow: rgba(245, 158, 11, 0.25);">
+      <div class="preset-card" id="cardIntermediario" data-preset="intermediario" style="--preset-theme-color: #f59e0b; --preset-glow: rgba(245, 158, 11, 0.15); display: none;">
         <div class="preset-badge badge-intermediario">🟡 Nível Intermediário</div>
         <div class="preset-header">
           <div>
@@ -182,7 +236,7 @@
       </div>
 
       <!-- Option 3: Avançado -->
-      <div class="preset-card" id="cardAvancado" data-preset="avancado" style="--preset-theme-color: #ef4444; --preset-glow: rgba(239, 68, 68, 0.25);">
+      <div class="preset-card" id="cardAvancado" data-preset="avancado" style="--preset-theme-color: #ef4444; --preset-glow: rgba(239, 68, 68, 0.15); display: none;">
         <div class="preset-badge badge-avancado">🔴 Nível Avançado</div>
         <div class="preset-header">
           <div>
@@ -228,7 +282,7 @@
       </div>
 
       <!-- Option 4: Personalizado -->
-      <div class="preset-card" id="cardCustom" data-preset="custom" style="--preset-theme-color: #a855f7; --preset-glow: rgba(168, 85, 247, 0.25);">
+      <div class="preset-card" id="cardCustom" data-preset="custom" style="--preset-theme-color: #a855f7; --preset-glow: rgba(168, 85, 247, 0.15); display: none;">
         <div class="preset-badge badge-custom">⚙️ Treino Personalizado</div>
         <div class="preset-title">Configuração Livre</div>
         <div class="custom-form">
@@ -259,20 +313,28 @@
         </div>
       </div>
 
-      <!-- Modo de Teste Rápido -->
-      <div class="quick-test-bar">
-        <span>⚡ Modo Teste Rápido (Acelerar 10x)</span>
-        <label class="switch">
-          <input type="checkbox" id="chkQuickTest">
-          <span class="slider"></span>
-        </label>
+      <!-- 4. Runner Challenge Banner Card (Matching Attached UI) -->
+      <div class="runner-banner-card">
+        <div class="banner-content">
+          <div class="banner-badge">CORRIDA HIIT ESTEIRA ⚡</div>
+          <div class="banner-title">SUPERE SEUS LIMITES HOJE</div>
+          <div class="banner-sub">Acelere seu metabolismo e queime até 3x mais calorias com intervalos de tiros!</div>
+          
+          <div class="quick-test-bar">
+            <span>⚡ Modo Teste Rápido (Acelerar 10x)</span>
+            <label class="switch">
+              <input type="checkbox" id="chkQuickTest">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <button id="btnStartWorkout" class="btn-primary-dark">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            INICIAR TREINO AGORA
+          </button>
+        </div>
       </div>
 
-      <!-- Big Start Button -->
-      <button id="btnStartWorkout" class="btn-primary">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        INICIAR TREINO NA ESTEIRA
-      </button>
     </main>
 
     <!-- SCREEN 2: ACTIVE WORKOUT TIMER -->
@@ -463,6 +525,32 @@
         <!-- Dynamic history cards inserted here -->
       </div>
     </main>
+
+    <!-- FLOATING BOTTOM NAVIGATION BAR (Matching Attached UI) -->
+    <nav class="bottom-nav-bar">
+      <button class="nav-item active" id="navItemHome">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Início</span>
+      </button>
+
+      <button class="nav-item" id="navItemTips">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>Dicas</span>
+      </button>
+
+      <div class="nav-center-wrapper">
+        <button class="nav-center-btn" id="btnNavStartWorkout" title="Iniciar Treino">
+          <svg viewBox="0 0 512 512">
+            <path d="M 270 140 A 24 24 0 1 1 270 139.9 Z M 230 200 L 280 180 L 320 220 M 250 200 L 200 240 L 160 230 M 250 240 L 220 310 L 170 370 M 230 280 L 300 330 L 340 400" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="nav-item" id="navItemHistory">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        <span>Histórico</span>
+      </button>
+    </nav>
 
   </div>
 

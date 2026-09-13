@@ -1117,14 +1117,93 @@ function copyWorkoutText() {
 // Initialize Event Listeners & Preset Selectors
 function initApp() {
   // Preset Selection Cards
-  const cards = document.querySelectorAll('.preset-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      cards.forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      state.activePreset = card.dataset.preset;
+  // Level Selector Chips
+  const chips = document.querySelectorAll('.level-chip');
+  const presetCards = document.querySelectorAll('.preset-card');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      const selectedPreset = chip.dataset.preset;
+      state.activePreset = selectedPreset;
+
+      // Show matching preset card, hide others
+      presetCards.forEach(card => {
+        if (card.dataset.preset === selectedPreset) {
+          card.style.display = 'block';
+          card.classList.add('selected');
+        } else {
+          card.style.display = 'none';
+          card.classList.remove('selected');
+        }
+      });
     });
   });
+
+  // Preset Selection Cards Click Handler
+  presetCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const preset = card.dataset.preset;
+      state.activePreset = preset;
+      
+      chips.forEach(c => {
+        c.classList.toggle('active', c.dataset.preset === preset);
+      });
+
+      presetCards.forEach(c => {
+        if (c.dataset.preset === preset) {
+          c.style.display = 'block';
+          c.classList.add('selected');
+        } else {
+          c.style.display = 'none';
+          c.classList.remove('selected');
+        }
+      });
+    });
+  });
+
+  // Floating Bottom Navigation Bar Handlers
+  const navItemHome = document.getElementById('navItemHome');
+  const navItemTips = document.getElementById('navItemTips');
+  const navItemHistory = document.getElementById('navItemHistory');
+  const btnNavStartWorkout = document.getElementById('btnNavStartWorkout');
+  const btnHeaderHistory = document.getElementById('btnHeaderHistory');
+
+  if (navItemHome) {
+    navItemHome.addEventListener('click', () => {
+      updateNavTabs('navItemHome');
+      if (!state.isRunning) showScreen('screenSelect');
+      else showScreen('screenActive');
+    });
+  }
+
+  if (navItemTips) {
+    navItemTips.addEventListener('click', () => {
+      document.getElementById('modalTips').classList.add('active');
+    });
+  }
+
+  if (navItemHistory) {
+    navItemHistory.addEventListener('click', () => {
+      updateNavTabs('navItemHistory');
+      renderHistoryScreen();
+      showScreen('screenHistory');
+    });
+  }
+
+  if (btnHeaderHistory) {
+    btnHeaderHistory.addEventListener('click', () => {
+      updateNavTabs('navItemHistory');
+      renderHistoryScreen();
+      showScreen('screenHistory');
+    });
+  }
+
+  if (btnNavStartWorkout) {
+    btnNavStartWorkout.addEventListener('click', startWorkout);
+  }
 
   // Audio Toggle
   document.getElementById('btnToggleAudio').addEventListener('click', () => {
@@ -1152,7 +1231,9 @@ function initApp() {
   });
 
   // Start Workout Button
-  document.getElementById('btnStartWorkout').addEventListener('click', startWorkout);
+  const btnStart = document.getElementById('btnStartWorkout');
+  if (btnStart) btnStart.addEventListener('click', startWorkout);
+
   document.getElementById('btnNewWorkout').addEventListener('click', () => showScreen('screenSelect'));
 
   // Timer Controls
@@ -1183,6 +1264,7 @@ function initApp() {
 
   document.getElementById('menuItemHome').addEventListener('click', () => {
     dropdownMenu.classList.remove('active');
+    updateNavTabs('navItemHome');
     if (!state.isRunning) showScreen('screenSelect');
     else showScreen('screenActive');
   });
@@ -1194,16 +1276,19 @@ function initApp() {
 
   document.getElementById('menuItemHistory').addEventListener('click', () => {
     dropdownMenu.classList.remove('active');
+    updateNavTabs('navItemHistory');
     renderHistoryScreen();
     showScreen('screenHistory');
   });
 
   document.getElementById('btnGoToHistory').addEventListener('click', () => {
+    updateNavTabs('navItemHistory');
     renderHistoryScreen();
     showScreen('screenHistory');
   });
 
   document.getElementById('btnBackFromHistory').addEventListener('click', () => {
+    updateNavTabs('navItemHome');
     showScreen('screenSelect');
   });
 
@@ -1233,11 +1318,124 @@ function initApp() {
     });
   });
 
+  // Render Dashboard Metrics & Sparkline
+  updateDashboardMetrics();
+
   // Register PWA Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => {
       console.log('SW Registration failed:', err);
     });
+  }
+}
+
+function updateNavTabs(activeTabId) {
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  const target = document.getElementById(activeTabId);
+  if (target) target.classList.add('active');
+}
+
+// Render Hero Sparkline Curve & Update Dashboard Metrics
+function updateDashboardMetrics() {
+  const history = state.workoutHistory;
+  
+  let totalDistKm = 0;
+  let totalCalories = 0;
+  let totalSecs = 0;
+
+  history.forEach(h => {
+    totalDistKm += (h.distanceKm || 0);
+    totalCalories += (h.calories || 0);
+    totalSecs += (h.durationSec || 0);
+  });
+
+  const heroDistEl = document.getElementById('heroDistance');
+  const heroCalEl = document.getElementById('heroCalories');
+  
+  if (heroDistEl) {
+    heroDistEl.textContent = totalDistKm > 0 ? `${totalDistKm.toFixed(2).replace('.', ',')} KM` : '8,31 KM';
+  }
+  if (heroCalEl) {
+    heroCalEl.textContent = totalCalories > 0 ? `${totalCalories} Calorias` : '313 Calorias';
+  }
+
+  // Dark Record Card Stats
+  const darkWorkoutsEl = document.getElementById('darkStatWorkouts');
+  const darkTimeEl = document.getElementById('darkStatTime');
+  const darkDistEl = document.getElementById('darkStatDistance');
+
+  if (darkWorkoutsEl) darkWorkoutsEl.textContent = history.length > 0 ? history.length : '0';
+  if (darkTimeEl) {
+    const mins = Math.round(totalSecs / 60);
+    if (mins >= 60) {
+      const hrs = Math.floor(mins / 60);
+      const remMins = mins % 60;
+      darkTimeEl.textContent = `${hrs}h ${remMins}m`;
+    } else {
+      darkTimeEl.textContent = `${mins}m`;
+    }
+  }
+  if (darkDistEl) darkDistEl.textContent = `${totalDistKm.toFixed(1)} KM`;
+
+  // Draw Hero Sparkline Curve
+  const canvas = document.getElementById('heroSparklineCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    let dataPoints = [20, 35, 25, 45, 30, 60, 40];
+    if (history.length > 0) {
+      const recent = history.slice(0, 7).reverse();
+      dataPoints = recent.map(r => Math.max(15, (r.distanceKm || 2) * 12));
+      while (dataPoints.length < 5) dataPoints.unshift(20);
+    }
+
+    ctx.save();
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
+    grad.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    ctx.beginPath();
+    const stepX = w / (dataPoints.length - 1);
+    ctx.moveTo(0, h - dataPoints[0]);
+
+    for (let i = 1; i < dataPoints.length; i++) {
+      const prevX = (i - 1) * stepX;
+      const prevY = h - dataPoints[i - 1];
+      const currX = i * stepX;
+      const currY = h - dataPoints[i];
+      const cpX1 = prevX + stepX / 2;
+      const cpY1 = prevY;
+      const cpX2 = prevX + stepX / 2;
+      const cpY2 = currY;
+      ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, currX, currY);
+    }
+
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, h - dataPoints[0]);
+    for (let i = 1; i < dataPoints.length; i++) {
+      const prevX = (i - 1) * stepX;
+      const prevY = h - dataPoints[i - 1];
+      const currX = i * stepX;
+      const currY = h - dataPoints[i];
+      const cpX1 = prevX + stepX / 2;
+      const cpY1 = prevY;
+      const cpX2 = prevX + stepX / 2;
+      const cpY2 = currY;
+      ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, currX, currY);
+    }
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
   }
 }
 
