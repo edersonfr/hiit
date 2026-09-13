@@ -18,8 +18,67 @@ const state = {
   totalElapsedSeconds: 0,
   timerInterval: null,
   wakeLock: null,
-  workoutHistory: JSON.parse(localStorage.getItem('hiit_history') || '[]')
+  workoutHistory: JSON.parse(localStorage.getItem('hiit_history') || '[]'),
+  userProfile: JSON.parse(localStorage.getItem('hiit_user_profile') || JSON.stringify({
+    name: 'Atleta',
+    weightKg: 70,
+    heightCm: 175,
+    age: 30,
+    gender: 'masculino',
+    avatar: '🏃'
+  }))
 };
+
+function saveUserProfile(profileData) {
+  state.userProfile = { ...state.userProfile, ...profileData };
+  localStorage.setItem('hiit_user_profile', JSON.stringify(state.userProfile));
+  updateProfileUI();
+}
+
+function updateProfileUI() {
+  const p = state.userProfile;
+  const greetingName = document.getElementById('headerUserName');
+  const greetingSub = document.getElementById('headerGreetingSub');
+  const avatarBox = document.getElementById('headerAvatarBox');
+  const previewBox = document.getElementById('profileAvatarPreview');
+
+  if (greetingName) greetingName.textContent = p.name || 'Atleta';
+  if (greetingSub) greetingSub.textContent = `Olá, ${p.name || 'Atleta'}! 👋`;
+  if (avatarBox) avatarBox.textContent = p.avatar || '🏃';
+  if (previewBox) previewBox.textContent = p.avatar || '🏃';
+
+  const inputName = document.getElementById('inputProfileName');
+  const inputWeight = document.getElementById('inputProfileWeight');
+  const inputHeight = document.getElementById('inputProfileHeight');
+  const inputAge = document.getElementById('inputProfileAge');
+  const selectGender = document.getElementById('selectProfileGender');
+
+  if (inputName) inputName.value = p.name || 'Atleta';
+  if (inputWeight) inputWeight.value = p.weightKg || 70;
+  if (inputHeight) inputHeight.value = p.heightCm || 175;
+  if (inputAge) inputAge.value = p.age || 30;
+  if (selectGender) selectGender.value = p.gender || 'masculino';
+}
+
+function speedToMET(spd) {
+  if (spd <= 4.0) return 3.0;
+  if (spd <= 6.0) return 3.8;
+  if (spd <= 8.0) return 6.0;
+  if (spd <= 10.0) return 9.8;
+  if (spd <= 12.0) return 11.5;
+  return 13.5;
+}
+
+function calculateCaloriesMET(stages, weightKg = 70) {
+  let totalKcal = 0;
+  stages.forEach(s => {
+    const spd = s.speed || 5.0;
+    const durSec = s.duration || 0;
+    const met = speedToMET(spd);
+    totalKcal += met * weightKg * (durSec / 3600);
+  });
+  return Math.max(10, Math.round(totalKcal));
+}
 
 // Web Audio Context for Beeps
 let audioCtx = null;
@@ -676,8 +735,9 @@ function finishWorkout() {
     'custom': 'Personalizado'
   };
 
-  // Approx calories (HIIT on treadmill ~10-12 kcal/min or distance based)
-  const estCalories = Math.round(totalDistKm > 0 ? totalDistKm * 65 : (totalSecs / 60) * 11);
+  // Accurate MET-based calories using User Weight
+  const userWeight = (state.userProfile && state.userProfile.weightKg) ? parseFloat(state.userProfile.weightKg) : 70;
+  const estCalories = calculateCaloriesMET(state.stages, userWeight);
 
   document.getElementById('summaryTime').textContent = formatTime(totalSecs);
   document.getElementById('summaryDistance').textContent = `${totalDistKm.toFixed(2)} km`;
@@ -1254,59 +1314,109 @@ function initApp() {
 
   // Modals & Menu Navigation
   const modalShareCard = document.getElementById('modalShareCard');
+  const modalProfile = document.getElementById('modalProfile');
 
-  const menuItemHome = document.getElementById('menuItemHome');
-  if (menuItemHome) {
-    menuItemHome.addEventListener('click', () => {
-      dropdownMenu.classList.remove('active');
-      updateNavTabs('navItemHome');
-      if (!state.isRunning) showScreen('screenSelect');
-      else showScreen('screenActive');
+  const btnOpenProfile = document.getElementById('btnOpenProfile');
+  const btnCloseProfile = document.getElementById('btnCloseProfile');
+  const menuItemProfile = document.getElementById('menuItemProfile');
+  const formProfile = document.getElementById('formProfile');
+
+  if (btnOpenProfile) {
+    btnOpenProfile.addEventListener('click', () => {
+      updateProfileUI();
+      if (modalProfile) modalProfile.classList.add('active');
     });
   }
 
-  const menuItemHistory = document.getElementById('menuItemHistory');
-  if (menuItemHistory) {
-    menuItemHistory.addEventListener('click', () => {
-      dropdownMenu.classList.remove('active');
-      updateNavTabs('navItemHistory');
-      renderHistoryScreen();
-      showScreen('screenHistory');
+  if (menuItemProfile) {
+    menuItemProfile.addEventListener('click', () => {
+      if (dropdownMenu) dropdownMenu.classList.remove('active');
+      updateProfileUI();
+      if (modalProfile) modalProfile.classList.add('active');
     });
   }
 
-  document.getElementById('btnGoToHistory').addEventListener('click', () => {
-    updateNavTabs('navItemHistory');
-    renderHistoryScreen();
-    showScreen('screenHistory');
-  });
-
-  document.getElementById('btnBackFromHistory').addEventListener('click', () => {
-    updateNavTabs('navItemHome');
-    showScreen('screenSelect');
-  });
-
-  document.getElementById('btnClearHistoryScreen').addEventListener('click', clearHistory);
-
-  // Share Actions
-  document.getElementById('btnShareSummary').addEventListener('click', () => {
-    openShareModal(lastWorkoutData);
-  });
-
-  document.getElementById('btnCloseShareCard').addEventListener('click', () => {
-    modalShareCard.classList.remove('active');
-  });
-
-  document.getElementById('btnNativeShare').addEventListener('click', shareWorkoutNative);
-  document.getElementById('btnDownloadCard').addEventListener('click', downloadShareImage);
-  document.getElementById('btnCopyText').addEventListener('click', copyWorkoutText);
-
-  // Close Modals on Overlay Click
-  if (modalShareCard) {
-    modalShareCard.addEventListener('click', (e) => {
-      if (e.target === modalShareCard) modalShareCard.classList.remove('active');
+  if (btnCloseProfile) {
+    btnCloseProfile.addEventListener('click', () => {
+      if (modalProfile) modalProfile.classList.remove('active');
     });
   }
+
+  // Avatar Options Selector
+  document.querySelectorAll('.avatar-opt-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const selectedAvatar = btn.dataset.avatar || '🏃';
+      saveUserProfile({ avatar: selectedAvatar });
+    });
+  });
+
+  // Profile Form Submit
+  if (formProfile) {
+    formProfile.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('inputProfileName').value || 'Atleta';
+      const weightKg = parseFloat(document.getElementById('inputProfileWeight').value) || 70;
+      const heightCm = parseFloat(document.getElementById('inputProfileHeight').value) || 175;
+      const age = parseInt(document.getElementById('inputProfileAge').value, 10) || 30;
+      const gender = document.getElementById('selectProfileGender').value || 'masculino';
+
+      saveUserProfile({ name, weightKg, heightCm, age, gender });
+      if (modalProfile) modalProfile.classList.remove('active');
+    });
+  }
+
+  // Onboarding Carousel Handling
+  let onboardingStep = 1;
+  const btnNextOnboard = document.getElementById('btnNextOnboarding');
+  if (btnNextOnboard) {
+    btnNextOnboard.addEventListener('click', () => {
+      onboardingStep++;
+      const s1 = document.getElementById('onboardSlide1');
+      const s2 = document.getElementById('onboardSlide2');
+      const s3 = document.getElementById('onboardSlide3');
+      const d1 = document.getElementById('dot1');
+      const d2 = document.getElementById('dot2');
+      const d3 = document.getElementById('dot3');
+
+      if (onboardingStep === 2) {
+        if (s1) s1.style.display = 'none';
+        if (s2) s2.style.display = 'flex';
+        if (d1) d1.className = 'dot-step w-2.5 h-2.5 rounded-full bg-slate-300 transition-all';
+        if (d2) d2.className = 'dot-step w-3 h-3 rounded-full bg-slate-900 transition-all';
+      } else if (onboardingStep === 3) {
+        if (s2) s2.style.display = 'none';
+        if (s3) s3.style.display = 'flex';
+        btnNextOnboard.textContent = 'CONFIGURAR PERFIL ➔';
+        if (d2) d2.className = 'dot-step w-2.5 h-2.5 rounded-full bg-slate-300 transition-all';
+        if (d3) d3.className = 'dot-step w-3 h-3 rounded-full bg-slate-900 transition-all';
+      } else {
+        localStorage.setItem('hiit_onboarded', 'true');
+        const modalOnboard = document.getElementById('modalOnboarding');
+        if (modalOnboard) modalOnboard.classList.remove('active');
+        updateProfileUI();
+        if (modalProfile) modalProfile.classList.add('active');
+      }
+    });
+  }
+
+  // Check Onboarding & Splash Screen
+  setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        const onboarded = localStorage.getItem('hiit_onboarded');
+        if (!onboarded) {
+          const modalOnboard = document.getElementById('modalOnboarding');
+          if (modalOnboard) modalOnboard.classList.add('active');
+        }
+      }, 500);
+    }
+  }, 1200);
+
+  updateProfileUI();
 
   // Render Dashboard Metrics & Sparkline
   updateDashboardMetrics();
