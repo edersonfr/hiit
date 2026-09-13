@@ -291,6 +291,12 @@
           <div class="detail-item"><span>Caminhada</span><span>1 min (60s)</span></div>
           <div class="detail-item"><span>Repetições</span><span>8 a 10x</span></div>
         </div>
+
+        <div class="speed-inputs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08);">
+          <div class="input-group"><label for="speedWalkIniciante" style="font-size:0.72rem; color: var(--text-muted);">🚶 Caminhada (km/h)</label><input type="number" id="speedWalkIniciante" value="5.5" min="1.0" max="15.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+          <div class="input-group"><label for="speedRunIniciante" style="font-size:0.72rem; color: var(--text-muted);">⚡ Tiro (km/h)</label><input type="number" id="speedRunIniciante" value="9.5" min="4.0" max="25.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+        </div>
+
         <div class="preset-options">
           <label for="repsIniciante">Séries:</label>
           <select id="repsIniciante" onclick="event.stopPropagation()">
@@ -311,6 +317,12 @@
           <div class="detail-item"><span>Caminhada</span><span id="labelRestIntermediario">45 seg</span></div>
           <div class="detail-item"><span>Repetições</span><span>10 a 12x</span></div>
         </div>
+
+        <div class="speed-inputs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08);">
+          <div class="input-group"><label for="speedWalkIntermediario" style="font-size:0.72rem; color: var(--text-muted);">🚶 Caminhada (km/h)</label><input type="number" id="speedWalkIntermediario" value="6.0" min="1.0" max="15.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+          <div class="input-group"><label for="speedRunIntermediario" style="font-size:0.72rem; color: var(--text-muted);">⚡ Tiro (km/h)</label><input type="number" id="speedRunIntermediario" value="11.0" min="4.0" max="25.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+        </div>
+
         <div class="preset-options">
           <label for="restIntermediario">Descanso:</label>
           <select id="restIntermediario" onclick="event.stopPropagation()">
@@ -336,6 +348,12 @@
           <div class="detail-item"><span>Caminhada</span><span>20 seg</span></div>
           <div class="detail-item"><span>Repetições</span><span>10 a 15x</span></div>
         </div>
+
+        <div class="speed-inputs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08);">
+          <div class="input-group"><label for="speedWalkAvancado" style="font-size:0.72rem; color: var(--text-muted);">🚶 Caminhada (km/h)</label><input type="number" id="speedWalkAvancado" value="6.5" min="1.0" max="15.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+          <div class="input-group"><label for="speedRunAvancado" style="font-size:0.72rem; color: var(--text-muted);">⚡ Tiro (km/h)</label><input type="number" id="speedRunAvancado" value="13.0" min="4.0" max="25.0" step="0.5" onclick="event.stopPropagation()" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 8px; font-weight:700;"></div>
+        </div>
+
         <div class="preset-options">
           <label for="repsAvancado">Séries:</label>
           <select id="repsAvancado" onclick="event.stopPropagation()">
@@ -354,6 +372,8 @@
           <div class="input-group"><label for="customHigh">Tiro (seg)</label><input type="number" id="customHigh" value="30" min="10" max="180" onclick="event.stopPropagation()"></div>
           <div class="input-group"><label for="customLow">Caminhada (seg)</label><input type="number" id="customLow" value="45" min="10" max="180" onclick="event.stopPropagation()"></div>
           <div class="input-group"><label for="customReps">Nº Séries</label><input type="number" id="customReps" value="10" min="1" max="30" onclick="event.stopPropagation()"></div>
+          <div class="input-group"><label for="speedWalkCustom">🚶 Caminhada (km/h)</label><input type="number" id="speedWalkCustom" value="5.5" min="1.0" max="15.0" step="0.5" onclick="event.stopPropagation()"></div>
+          <div class="input-group"><label for="speedRunCustom">⚡ Tiro (km/h)</label><input type="number" id="speedRunCustom" value="10.5" min="4.0" max="25.0" step="0.5" onclick="event.stopPropagation()"></div>
         </div>
       </div>
 
@@ -389,7 +409,7 @@
 
         <div class="workout-stats-row">
           <div class="stat-box"><div class="stat-value" id="displayTotalElapsed">00:00</div><div class="stat-title">Tempo Total</div></div>
-          <div class="stat-box"><div class="stat-value" id="displaySuggestedPace">MODERADA</div><div class="stat-title">Velocidade</div></div>
+          <div class="stat-box"><div class="stat-value" id="displaySuggestedPace">5.5 km/h</div><div class="stat-title" id="displaySuggestedPaceSub">Pace: 10'54"/km</div></div>
           <div class="stat-box"><div class="stat-value" id="displayNextPhase">CORRIDA</div><div class="stat-title">Próxima Fase</div></div>
         </div>
 
@@ -401,7 +421,7 @@
           </button>
 
           <button id="btnSkipStage" class="btn-ctrl btn-skip" title="Pular Fase"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
-          <button id="btnStopWorkout" class="btn-ctrl btn-stop" title="Encerrar Treino"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+          <button id="btnStopWorkout" class="btn-ctrl btn-stop" title="Encerrar Treino"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 12z"/></svg></button>
         </div>
 
         <div class="treadmill-tip-box" id="treadmillTipBox">
@@ -418,11 +438,24 @@
         <div class="congrats-title">PARABÉNS! TREINO CONCLUÍDO!</div>
         <div class="congrats-subtitle" id="summarySubtext">Você completou seu treino HIIT com sucesso na esteira.</div>
 
-        <div class="summary-grid">
+        <div class="summary-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;">
           <div class="summary-item"><div class="summary-val" id="summaryTime">00:00</div><div class="summary-lbl">Tempo Total</div></div>
+          <div class="summary-item"><div class="summary-val" id="summaryDistance">0.00 km</div><div class="summary-lbl">Distância Est.</div></div>
+          <div class="summary-item"><div class="summary-val" id="summaryAvgPace">0'00"/km</div><div class="summary-lbl">Pace Médio</div></div>
+          <div class="summary-item"><div class="summary-val" id="summaryAvgSpeed">0.0 km/h</div><div class="summary-lbl">Velocidade Média</div></div>
+          <div class="summary-item"><div class="summary-val" id="summaryMaxSpeed">0.0 km/h</div><div class="summary-lbl">Vel. Máxima</div></div>
           <div class="summary-item"><div class="summary-val" id="summaryReps">0/0</div><div class="summary-lbl">Séries de Tiro</div></div>
           <div class="summary-item"><div class="summary-val" id="summaryCalories">~180 kcal</div><div class="summary-lbl">Est. Calórica</div></div>
           <div class="summary-item"><div class="summary-val" id="summaryPreset">Iniciante</div><div class="summary-lbl">Nível Concluído</div></div>
+        </div>
+
+        <!-- Workout Graph -->
+        <div class="workout-chart-card" style="width:100%; background:rgba(0,0,0,0.35); border:1px solid var(--border-color); border-radius:16px; padding:14px; margin-top:4px;">
+          <div style="font-weight:700; font-size:0.95rem; text-align:left;">📈 Perfil do Treino & Intensidades</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); text-align:left; margin-bottom:8px;">Velocidade (km/h) ao longo do tempo</div>
+          <div style="width:100%; background:rgba(15,23,42,0.6); border-radius:10px; padding:8px;">
+            <canvas id="summaryChartCanvas" width="440" height="200" style="width:100%; height:auto; max-height:200px; display:block;"></canvas>
+          </div>
         </div>
 
         <div class="summary-actions">
@@ -445,8 +478,9 @@
         </div>
       </div>
 
-      <div class="history-totals-grid">
+      <div class="history-totals-grid" style="grid-template-columns: repeat(4, 1fr);">
         <div class="total-card"><div class="total-val" id="totalWorkoutsCount">0</div><div class="total-lbl">Treinos</div></div>
+        <div class="total-card"><div class="total-val" id="totalDistanceCount">0.0 km</div><div class="total-lbl">Distância</div></div>
         <div class="total-card"><div class="total-val" id="totalCaloriesCount">0</div><div class="total-lbl">Calorias</div></div>
         <div class="total-card"><div class="total-val" id="totalMinutesCount">0 min</div><div class="total-lbl">Tempo HIIT</div></div>
       </div>
@@ -883,7 +917,7 @@
 
     async function shareWorkoutNative() {
       const w = currentShareWorkout; if (!w) return;
-      const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino`;
+      const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n📍 Distância: ${w.distanceKm ? w.distanceKm.toFixed(2) : '2.50'} km\n⚡ Pace Médio: ${w.avgPaceStr || '5\'30"/km'}\n🚀 Vel. Máxima: ${w.maxSpeedKmH ? w.maxSpeedKmH.toFixed(1) : '12.0'} km/h\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino`;
       const canvas = document.getElementById('shareCanvas');
       if (navigator.share && canvas) {
         try {
@@ -906,7 +940,7 @@
 
     function copyWorkoutText() {
       const w = currentShareWorkout; if (!w) return;
-      const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino`;
+      const shareText = `🏃⚡ Concluí meu treino HIIT na Esteira!\n\n🔥 Nível: ${w.preset} (${w.reps} tiros)\n⏱️ Duração: ${formatTime(w.durationSec)}\n📍 Distância: ${w.distanceKm ? w.distanceKm.toFixed(2) : '2.50'} km\n⚡ Pace Médio: ${w.avgPaceStr || '5\'30"/km'}\n🚀 Vel. Máxima: ${w.maxSpeedKmH ? w.maxSpeedKmH.toFixed(1) : '12.0'} km/h\n💥 Calorias: ~${w.calories} kcal\n\n#HIIT #Esteira #FocoNoTreino`;
       if (navigator.clipboard) { navigator.clipboard.writeText(shareText).then(() => alert("Texto copiado!")); }
     }
 

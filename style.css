@@ -285,6 +285,51 @@ body {
   color: var(--text-main);
 }
 
+/* Speed Input Grid inside Preset Cards */
+.speed-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.speed-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.speed-input-box label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.speed-input-box input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.speed-input-box input:focus {
+  border-color: var(--accent-color);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
 /* Reps / Configuration selector inside Card */
 .preset-options {
   margin-top: 12px;
@@ -723,28 +768,83 @@ input:checked + .slider:before {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
   width: 100%;
+}
+
+@media (min-width: 440px) {
+  .summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .summary-item {
   background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 14px;
-  padding: 12px;
+  padding: 10px 8px;
   text-align: center;
 }
 
 .summary-val {
   font-family: var(--font-heading);
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #10b981;
 }
 
 .summary-lbl {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Workout Chart Card */
+.workout-chart-card {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.chart-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.chart-subtitle {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.chart-canvas-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 8px;
+}
+
+.chart-canvas-wrapper canvas {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  display: block;
 }
 
 /* Dropdown Menu (3-Dots Header Menu) */
