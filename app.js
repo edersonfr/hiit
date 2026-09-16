@@ -408,6 +408,15 @@ function updateStageUI() {
   document.documentElement.style.setProperty('--current-phase-color', stage.color);
   document.documentElement.style.setProperty('--current-phase-glow', stage.glow);
 
+  const phaseBanner = document.getElementById('phaseBanner');
+  if (phaseBanner) {
+    phaseBanner.style.backgroundColor = stage.color;
+  }
+  const progressCircle = document.getElementById('progressCircle');
+  if (progressCircle) {
+    progressCircle.style.stroke = stage.color;
+  }
+
   // Round Pill
   if (stage.rep && stage.totalReps) {
     document.getElementById('roundPill').textContent = `SÉRIE ${stage.rep}/${stage.totalReps}`;
@@ -593,20 +602,36 @@ function stopWorkout() {
   }
 }
 
-// Render High-DPI Workout Graph Canvas
+// Render High-DPI & Responsive Workout Graph Canvas
 function renderWorkoutChart(canvas, stages) {
   if (!canvas || !stages || stages.length === 0) return;
+
+  const parent = canvas.parentElement;
+  const parentW = parent ? parent.clientWidth : 0;
+  const displayWidth = parentW > 0 ? (parentW - 16) : (canvas.clientWidth || 340);
+  const displayHeight = parseInt(canvas.getAttribute('height'), 10) || 180;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(displayWidth * dpr);
+  canvas.height = Math.round(displayHeight * dpr);
+
   const ctx = canvas.getContext('2d');
-  
-  const width = canvas.width || 440;
-  const height = canvas.height || 200;
+  if (ctx.resetTransform) {
+    ctx.resetTransform();
+  } else {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  ctx.scale(dpr, dpr);
+
+  const width = displayWidth;
+  const height = displayHeight;
 
   ctx.clearRect(0, 0, width, height);
 
-  const padL = 36;
-  const padR = 16;
-  const padT = 24;
-  const padB = 28;
+  const padL = 28;
+  const padR = 12;
+  const padT = 20;
+  const padB = 24;
   const graphW = width - padL - padR;
   const graphH = height - padT - padB;
 
@@ -635,7 +660,7 @@ function renderWorkoutChart(canvas, stages) {
     ctx.fillStyle = '#64748b';
     ctx.font = '600 10px Inter, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(`${yVal.toFixed(0)}`, padL - 6, yPos + 3);
+    ctx.fillText(`${yVal.toFixed(0)}`, padL - 5, yPos + 3);
   }
 
   // Draw Stepped Profile Area & Lines
@@ -684,7 +709,7 @@ function renderWorkoutChart(canvas, stages) {
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px Outfit, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${s.speed}`, (startX + endX) / 2, speedY - 5);
+      ctx.fillText(`${s.speed}`, (startX + endX) / 2, speedY - 4);
     }
 
     ctx.restore();
@@ -700,7 +725,7 @@ function renderWorkoutChart(canvas, stages) {
     const timeSec = (totalDuration / xSteps) * i;
     const xPos = padL + (i / xSteps) * graphW;
     const mins = Math.floor(timeSec / 60);
-    ctx.fillText(`${mins}'`, xPos, height - 6);
+    ctx.fillText(`${mins}'`, xPos, height - 4);
   }
 }
 
@@ -739,18 +764,24 @@ function finishWorkout() {
   const userWeight = (state.userProfile && state.userProfile.weightKg) ? parseFloat(state.userProfile.weightKg) : 70;
   const estCalories = calculateCaloriesMET(state.stages, userWeight);
 
-  document.getElementById('summaryTime').textContent = formatTime(totalSecs);
-  document.getElementById('summaryDistance').textContent = `${totalDistKm.toFixed(2)} km`;
-  document.getElementById('summaryAvgPace').textContent = avgPaceStr;
-  document.getElementById('summaryAvgSpeed').textContent = `${avgSpeedKmH.toFixed(1)} km/h`;
-  document.getElementById('summaryMaxSpeed').textContent = `${maxSpeedKmH.toFixed(1)} km/h`;
-  document.getElementById('summaryReps').textContent = `${totalReps}/${totalReps}`;
-  document.getElementById('summaryPreset').textContent = presetNames[state.activePreset] || 'Iniciante';
-  document.getElementById('summaryCalories').textContent = `~${estCalories} kcal`;
+  const setElText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+
+  setElText('summaryTime', formatTime(totalSecs));
+  setElText('summaryDistance', `${totalDistKm.toFixed(2)} km`);
+  setElText('summaryAvgPace', avgPaceStr);
+  setElText('summaryAvgSpeed', `${avgSpeedKmH.toFixed(1)} km/h`);
+  setElText('summaryMaxSpeed', `${maxSpeedKmH.toFixed(1)} km/h`);
+  setElText('summaryReps', `${totalReps}/${totalReps}`);
+  setElText('summaryPreset', presetNames[state.activePreset] || 'Iniciante');
+  setElText('summaryCalories', `~${estCalories} kcal`);
 
   // Render Workout Intensity Graph
   setTimeout(() => {
-    renderWorkoutChart(document.getElementById('summaryChartCanvas'), state.stages);
+    const canvas = document.getElementById('summaryChartCanvas');
+    if (canvas) renderWorkoutChart(canvas, state.stages);
   }, 50);
 
   // Save to History
@@ -822,64 +853,67 @@ function renderHistoryScreen() {
 
   if (history.length === 0) {
     container.innerHTML = `
-      <div class="empty-history" style="padding: 40px 20px;">
-        <div style="font-size: 2.5rem; margin-bottom: 8px;">🏃💨</div>
-        <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);">Nenhum treino registrado ainda.</div>
-        <div style="font-size: 0.82rem; margin-top: 4px;">Escolha um nível e comece seu primeiro HIIT na esteira!</div>
+      <div class="empty-history bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-2">
+        <div class="text-4xl mb-1">🏃💨</div>
+        <div class="font-heading font-extrabold text-slate-900 text-base">Nenhum treino registrado ainda</div>
+        <div class="text-xs text-slate-500 font-medium">Escolha um nível de treino e comece seu primeiro HIIT na esteira!</div>
       </div>
     `;
     return;
   }
 
   const badgeClasses = {
-    'Iniciante': 'badge-iniciante',
-    'Intermediário': 'badge-intermediario',
-    'Avançado': 'badge-avancado',
-    'Personalizado': 'badge-custom'
+    'Iniciante': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    'Intermediário': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    'Avançado': 'bg-red-500/10 text-red-600 border-red-500/20',
+    'Personalizado': 'bg-purple-500/10 text-purple-600 border-purple-500/20'
   };
 
-  container.innerHTML = history.map((item, index) => `
-    <div class="history-card-item">
-      <div class="history-card-top">
-        <span class="preset-badge ${badgeClasses[item.preset] || 'badge-iniciante'}">
+  container.innerHTML = history.map((item, index) => {
+    const badgeStyle = badgeClasses[item.preset] || badgeClasses['Iniciante'];
+    return `
+    <div class="history-card-item bg-white border border-slate-200 rounded-3xl p-4 shadow-sm flex flex-col gap-3 transition hover:shadow-md">
+      <div class="history-card-top flex items-center justify-between">
+        <span class="preset-badge text-[11px] font-extrabold uppercase px-3 py-1 rounded-full border ${badgeStyle}">
           ${item.preset} (${item.reps} tiros)
         </span>
-        <span class="history-card-date">${item.date}</span>
+        <span class="history-card-date text-xs font-semibold text-slate-400">${item.date}</span>
       </div>
 
-      <div class="history-card-body" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="history-card-body grid grid-cols-4 gap-2 text-center py-2.5 px-2 bg-slate-50 rounded-2xl border border-slate-100">
         <div>
-          <div class="card-stat-val">${formatTime(item.durationSec)}</div>
-          <div class="card-stat-lbl">Tempo</div>
+          <div class="card-stat-val font-heading font-black text-sm text-slate-900">${formatTime(item.durationSec)}</div>
+          <div class="card-stat-lbl text-[10px] font-semibold text-slate-500 uppercase mt-0.5">Tempo</div>
         </div>
         <div>
-          <div class="card-stat-val" style="color: #60a5fa;">${item.distanceKm ? item.distanceKm.toFixed(2) : '--'} km</div>
-          <div class="card-stat-lbl">Distância</div>
+          <div class="card-stat-val font-heading font-black text-sm text-blue-600">${item.distanceKm ? item.distanceKm.toFixed(2) : '--'} km</div>
+          <div class="card-stat-lbl text-[10px] font-semibold text-slate-500 uppercase mt-0.5">Distância</div>
         </div>
         <div>
-          <div class="card-stat-val" style="color: #f59e0b;">${item.avgPaceStr || '--'}</div>
-          <div class="card-stat-lbl">Pace Médio</div>
+          <div class="card-stat-val font-heading font-black text-sm text-amber-600">${item.avgPaceStr || '--'}</div>
+          <div class="card-stat-lbl text-[10px] font-semibold text-slate-500 uppercase mt-0.5">Pace</div>
         </div>
         <div>
-          <div class="card-stat-val" style="color: #10b981;">~${item.calories} kcal</div>
-          <div class="card-stat-lbl">Calorias</div>
+          <div class="card-stat-val font-heading font-black text-sm text-emerald-600">~${item.calories} kcal</div>
+          <div class="card-stat-lbl text-[10px] font-semibold text-slate-500 uppercase mt-0.5">Calorias</div>
         </div>
       </div>
 
       ${item.stages && item.stages.length ? `
-        <div style="padding: 0 12px 8px 12px;">
-          <canvas id="histChart_${index}" width="400" height="90" style="width: 100%; height: 60px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"></canvas>
+        <div class="chart-box bg-slate-900 p-2.5 rounded-2xl border border-slate-800">
+          <canvas id="histChart_${index}" width="400" height="90" class="w-full h-[60px]"></canvas>
         </div>
       ` : ''}
 
-      <div class="history-card-footer">
-        <button class="btn-share-mini" onclick="handleShareItemIndex(${index})">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+      <div class="history-card-footer flex justify-end pt-0.5">
+        <button class="btn-share-mini text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer" onclick="handleShareItemIndex(${index})">
+          <svg viewBox="0 0 24 24" class="w-4 h-4 fill-current"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
           Compartilhar
         </button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   // Render mini charts for each history item
   setTimeout(() => {
@@ -934,186 +968,221 @@ function drawShareCanvas(workout) {
   const w = canvas.width; // 540
   const h = canvas.height; // 960
 
-  // 1. Dark Gradient Background
+  ctx.clearRect(0, 0, w, h);
+
+  // 1. Sleek Dark Gradient Background
   const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
   bgGrad.addColorStop(0, '#0f172a');
-  bgGrad.addColorStop(0.5, '#1e1b4b');
-  bgGrad.addColorStop(1, '#090d16');
+  bgGrad.addColorStop(0.35, '#090d16');
+  bgGrad.addColorStop(0.75, '#1e1b4b');
+  bgGrad.addColorStop(1, '#0f172a');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
-  // 2. Glowing Orbs
+  // 2. Dynamic Glowing Orbs Background
   ctx.save();
+  // Red Orb top-left
   ctx.shadowColor = '#ef4444';
-  ctx.shadowBlur = 80;
+  ctx.shadowBlur = 95;
   ctx.beginPath();
-  ctx.arc(100, 150, 120, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+  ctx.arc(80, 110, 100, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.22)';
   ctx.fill();
 
+  // Emerald Orb bottom-right
   ctx.shadowColor = '#10b981';
+  ctx.shadowBlur = 95;
   ctx.beginPath();
-  ctx.arc(440, 750, 140, 0, Math.PI * 2);
+  ctx.arc(460, 810, 120, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+  ctx.fill();
+
+  // Blue Orb center
+  ctx.shadowColor = '#3b82f6';
+  ctx.shadowBlur = 95;
+  ctx.beginPath();
+  ctx.arc(270, 480, 140, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.12)';
   ctx.fill();
   ctx.restore();
 
-  // 3. Card Frame
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 3;
+  // 3. Subtle Card Glassmorphism Frame
+  ctx.save();
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(30, 40, w - 60, h - 80, 24);
+  ctx.roundRect(24, 28, w - 48, h - 56, 28);
   ctx.fill();
   ctx.stroke();
+  ctx.restore();
 
-  // 4. Header Branding
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 32px Outfit, sans-serif';
+  // 4. Header Branding: App Icon & Name
+  const badgeX = w / 2 - 32;
+  const badgeY = 56;
+  ctx.save();
+  ctx.shadowColor = 'rgba(239, 68, 68, 0.4)';
+  ctx.shadowBlur = 18;
+  const iconGrad = ctx.createLinearGradient(badgeX, badgeY, badgeX + 64, badgeY + 64);
+  iconGrad.addColorStop(0, '#ef4444');
+  iconGrad.addColorStop(0.5, '#f59e0b');
+  iconGrad.addColorStop(1, '#10b981');
+  ctx.fillStyle = iconGrad;
+  ctx.beginPath();
+  ctx.roundRect(badgeX, badgeY, 64, 64, 18);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.font = '36px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('HIIT NA ESTEIRA ⚡', w / 2, 105);
+  ctx.fillText('⚡', w / 2, badgeY + 44);
 
+  // App Title
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '900 30px Outfit, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('HIIT ESTEIRA', w / 2, badgeY + 102);
+
+  // User Profile Name & Tagline
+  const userName = (state.userProfile && state.userProfile.name) ? state.userProfile.name : 'Atleta';
+  const userAvatar = (state.userProfile && state.userProfile.avatar) ? state.userProfile.avatar : '🏃';
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 16px Inter, sans-serif';
-  ctx.fillText('TREINO CONCLUÍDO COM SUCESSO', w / 2, 135);
+  ctx.font = '600 15px Inter, sans-serif';
+  ctx.fillText(`${userAvatar} ${userName} • Treino Concluído!`, w / 2, badgeY + 126);
 
   // Divider Line
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(70, 160);
-  ctx.lineTo(w - 70, 160);
+  ctx.moveTo(60, badgeY + 144);
+  ctx.lineTo(w - 60, badgeY + 144);
   ctx.stroke();
 
-  // 5. Trophy Icon Circle
-  ctx.save();
-  ctx.shadowColor = '#f59e0b';
-  ctx.shadowBlur = 25;
-  const iconGrad = ctx.createLinearGradient(w/2 - 45, 180, w/2 + 45, 270);
-  iconGrad.addColorStop(0, '#ef4444');
-  iconGrad.addColorStop(1, '#f59e0b');
-  ctx.fillStyle = iconGrad;
+  // 5. Preset Level Pill & Date
+  const presetKey = (workout.preset || 'Iniciante').toLowerCase();
+  let badgeBg = 'rgba(16, 185, 129, 0.18)';
+  let badgeBorder = '#10b981';
+  let badgeText = '#34d399';
+  let badgeIcon = '🟢';
+
+  if (presetKey.includes('intermed')) {
+    badgeBg = 'rgba(245, 158, 11, 0.18)';
+    badgeBorder = '#f59e0b';
+    badgeText = '#fbbf24';
+    badgeIcon = '🟡';
+  } else if (presetKey.includes('avan') || presetKey.includes('avança')) {
+    badgeBg = 'rgba(239, 68, 68, 0.18)';
+    badgeBorder = '#ef4444';
+    badgeText = '#f87171';
+    badgeIcon = '🔴';
+  } else if (presetKey.includes('custom') || presetKey.includes('personalizad')) {
+    badgeBg = 'rgba(168, 85, 247, 0.18)';
+    badgeBorder = '#a855f7';
+    badgeText = '#c084fc';
+    badgeIcon = '⚙️';
+  }
+
+  // Draw Level Pill
+  const pillY = 224;
+  ctx.fillStyle = badgeBg;
+  ctx.strokeStyle = badgeBorder;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.arc(w / 2, 225, 45, 0, Math.PI * 2);
+  ctx.roundRect(w / 2 - 120, pillY, 240, 36, 18);
   ctx.fill();
-  ctx.restore();
-
-  ctx.font = '44px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('🔥', w / 2, 240);
-
-  // 6. Level Badge & Date
-  ctx.fillStyle = '#10b981';
-  ctx.font = '800 22px Outfit, sans-serif';
-  ctx.fillText(`NÍVEL ${workout.preset.toUpperCase()}`, w / 2, 305);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '500 15px Inter, sans-serif';
-  ctx.fillText(workout.date || 'Hoje', w / 2, 330);
-
-  // 7. Stats Box Grid Container
-  const statBoxY = 360;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(50, statBoxY, w - 100, 310, 20);
-  ctx.fill();
   ctx.stroke();
 
-  // Row 1: Tempo Total & Distância
-  const col1X = 170;
-  const col2X = 370;
+  ctx.fillStyle = badgeText;
+  ctx.font = '800 14px Outfit, sans-serif';
+  ctx.fillText(`${badgeIcon} NÍVEL ${(workout.preset || 'Iniciante').toUpperCase()}`, w / 2, pillY + 23);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '900 36px Outfit, sans-serif';
-  ctx.fillText(formatTime(workout.durationSec), col1X, statBoxY + 55);
-  ctx.fillStyle = '#94a3b8';
+  // Date
+  ctx.fillStyle = '#64748b';
   ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('TEMPO TOTAL', col1X, statBoxY + 75);
+  ctx.fillText(workout.date || 'Hoje', w / 2, pillY + 58);
 
-  ctx.fillStyle = '#60a5fa';
-  ctx.font = '900 36px Outfit, sans-serif';
-  ctx.fillText(`${workout.distanceKm ? workout.distanceKm.toFixed(2) : '0.00'} km`, col2X, statBoxY + 55);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('DISTÂNCIA EST.', col2X, statBoxY + 75);
+  // 6. Stats Grid Container (6 Metrics in 2x3 Grid)
+  const gridY = 310;
+  const cardW = 220;
+  const cardH = 92;
+  const col1X = 40;
+  const col2X = 280;
 
-  // Divider Line inside Stats Box
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-  ctx.beginPath();
-  ctx.moveTo(70, statBoxY + 105);
-  ctx.lineTo(w - 70, statBoxY + 105);
-  ctx.stroke();
+  const statsList = [
+    { label: 'TEMPO TOTAL', val: formatTime(workout.durationSec), color: '#ffffff', sub: 'Minutos em HIIT' },
+    { label: 'DISTÂNCIA EST.', val: `${workout.distanceKm ? workout.distanceKm.toFixed(2) : '0.00'} km`, color: '#60a5fa', sub: 'Quilômetros' },
+    { label: 'PACE MÉDIO', val: workout.avgPaceStr || '--', color: '#fbbf24', sub: 'Min / km' },
+    { label: 'VEL. MÁXIMA', val: `${workout.maxSpeedKmH ? workout.maxSpeedKmH.toFixed(1) : '--'} km/h`, color: '#f87171', sub: 'Pico de Tiro' },
+    { label: 'SÉRIES DE TIRO', val: `${workout.reps || 0} tiros`, color: '#c084fc', sub: 'Alta Intensidade' },
+    { label: 'CALORIAS (MET)', val: `~${workout.calories || 0} kcal`, color: '#34d399', sub: 'Gasto Estimado' }
+  ];
 
-  // Row 2: Pace Médio & Vel. Máxima
-  ctx.fillStyle = '#f59e0b';
-  ctx.font = '800 30px Outfit, sans-serif';
-  ctx.fillText(workout.avgPaceStr || '--', col1X, statBoxY + 155);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('PACE MÉDIO', col1X, statBoxY + 175);
+  statsList.forEach((st, idx) => {
+    const row = Math.floor(idx / 2);
+    const col = idx % 2;
+    const x = col === 0 ? col1X : col2X;
+    const y = gridY + row * (cardH + 12);
 
-  ctx.fillStyle = '#ef4444';
-  ctx.font = '800 30px Outfit, sans-serif';
-  ctx.fillText(`${workout.maxSpeedKmH ? workout.maxSpeedKmH.toFixed(1) : '--'} km/h`, col2X, statBoxY + 155);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('VEL. MÁXIMA', col2X, statBoxY + 175);
-
-  // Divider Line 2
-  ctx.beginPath();
-  ctx.moveTo(70, statBoxY + 205);
-  ctx.lineTo(w - 70, statBoxY + 205);
-  ctx.stroke();
-
-  // Row 3: Séries de Tiro & Calorias
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '800 30px Outfit, sans-serif';
-  ctx.fillText(`${workout.reps}x`, col1X, statBoxY + 255);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('SÉRIES DE TIRO', col1X, statBoxY + 275);
-
-  ctx.fillStyle = '#10b981';
-  ctx.font = '800 30px Outfit, sans-serif';
-  ctx.fillText(`~${workout.calories}`, col2X, statBoxY + 255);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 13px Inter, sans-serif';
-  ctx.fillText('EST. CALORIAS', col2X, statBoxY + 275);
-
-  // 8. Embedded Graph Preview on Card
-  if (workout.stages && workout.stages.length) {
-    const chartY = 690;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(50, chartY, w - 100, 130, 16);
+    ctx.roundRect(x, y, cardW, cardH, 16);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '600 12px Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('📈 PERFIL DE VELOCIDADES', 65, chartY + 20);
+    ctx.fillStyle = st.color;
+    ctx.font = '900 24px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(st.val, x + cardW / 2, y + 38);
 
-    // Draw mini graph on share canvas
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.fillText(st.label, x + cardW / 2, y + 58);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '500 10px Inter, sans-serif';
+    ctx.fillText(st.sub, x + cardW / 2, y + 74);
+  });
+
+  // 7. Graph Preview Box (Velocity Profile Graph)
+  if (workout.stages && workout.stages.length) {
+    const chartY = gridY + 3 * (cardH + 12) + 6; // ~628
+    const chartBoxW = w - 80;
+    const chartBoxH = 160;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(40, chartY, chartBoxW, chartBoxH, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 12px Outfit, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('📈 PERFIL DE INTENSIDADES DO TREINO', 56, chartY + 24);
+
+    // Mini Chart Render onto temp canvas
     const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 400;
-    tempCanvas.height = 90;
+    tempCanvas.width = 440;
+    tempCanvas.height = 110;
     renderWorkoutChart(tempCanvas, workout.stages);
-    ctx.drawImage(tempCanvas, 65, chartY + 28, w - 130, 90);
+    ctx.drawImage(tempCanvas, 52, chartY + 32, chartBoxW - 24, 115);
   }
 
-  // 9. Motivational Quote
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = 'italic 600 18px Inter, sans-serif';
+  // 8. Motivational Banner Quote & App Footer Watermark
+  const footerY = h - 75;
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'italic 700 16px Inter, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('"Meta cumprida na esteira! 🏃💨"', w / 2, h - 90);
+  ctx.fillText('"Treino concluído na esteira! 🏃💨"', w / 2, footerY);
 
-  // 10. Watermark Footer
   ctx.fillStyle = '#64748b';
-  ctx.font = '700 13px Inter, sans-serif';
-  ctx.fillText('GERADO PELO HIIT ESTEIRA APP', w / 2, h - 55);
+  ctx.font = '700 12px Inter, sans-serif';
+  ctx.fillText('GERADO PELO HIIT ESTEIRA APP', w / 2, footerY + 24);
+}
 }
 
 // Native Share or Image Share
@@ -1295,7 +1364,34 @@ function initApp() {
   document.getElementById('btnSkipStage').addEventListener('click', skipStage);
   document.getElementById('btnStopWorkout').addEventListener('click', stopWorkout);
 
-  // 3-Dots Dropdown Menu Toggle
+  // History Screen Navigation Buttons
+  const btnBackFromHistory = document.getElementById('btnBackFromHistory');
+  if (btnBackFromHistory) {
+    btnBackFromHistory.addEventListener('click', () => {
+      if (state.isRunning) {
+        showScreen('screenActive');
+      } else {
+        updateNavTabs('navItemHome');
+        showScreen('screenSelect');
+      }
+    });
+  }
+
+  const btnGoToHistory = document.getElementById('btnGoToHistory');
+  if (btnGoToHistory) {
+    btnGoToHistory.addEventListener('click', () => {
+      updateNavTabs('navItemHistory');
+      renderHistoryScreen();
+      showScreen('screenHistory');
+    });
+  }
+
+  const btnClearHistoryScreen = document.getElementById('btnClearHistoryScreen');
+  if (btnClearHistoryScreen) {
+    btnClearHistoryScreen.addEventListener('click', clearHistory);
+  }
+
+  // 3-Dots Dropdown Menu Toggle & Items
   const btnMenuDots = document.getElementById('btnMenuDots');
   const dropdownMenu = document.getElementById('dropdownMenu');
   
@@ -1312,9 +1408,98 @@ function initApp() {
     });
   }
 
-  // Modals & Menu Navigation
+  const menuItemHome = document.getElementById('menuItemHome');
+  if (menuItemHome) {
+    menuItemHome.addEventListener('click', () => {
+      if (dropdownMenu) dropdownMenu.classList.remove('active');
+      updateNavTabs('navItemHome');
+      if (!state.isRunning) showScreen('screenSelect');
+      else showScreen('screenActive');
+    });
+  }
+
+  const menuItemHistory = document.getElementById('menuItemHistory');
+  if (menuItemHistory) {
+    menuItemHistory.addEventListener('click', () => {
+      if (dropdownMenu) dropdownMenu.classList.remove('active');
+      updateNavTabs('navItemHistory');
+      renderHistoryScreen();
+      showScreen('screenHistory');
+    });
+  }
+
+  // Modals & Share Handlers
   const modalShareCard = document.getElementById('modalShareCard');
   const modalProfile = document.getElementById('modalProfile');
+  const btnShareSummary = document.getElementById('btnShareSummary');
+  const btnCloseShareCard = document.getElementById('btnCloseShareCard');
+  const btnNativeShare = document.getElementById('btnNativeShare');
+  const btnDownloadCard = document.getElementById('btnDownloadCard');
+  const btnCopyText = document.getElementById('btnCopyText');
+
+  if (btnShareSummary) {
+    btnShareSummary.addEventListener('click', () => {
+      openShareModal();
+    });
+  }
+
+  if (btnCloseShareCard) {
+    btnCloseShareCard.addEventListener('click', () => {
+      if (modalShareCard) modalShareCard.classList.remove('active');
+    });
+  }
+
+  if (btnDownloadCard) {
+    btnDownloadCard.addEventListener('click', () => {
+      const canvas = document.getElementById('shareCanvas');
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `hiit-esteira-treino-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }
+
+  if (btnNativeShare) {
+    btnNativeShare.addEventListener('click', async () => {
+      const canvas = document.getElementById('shareCanvas');
+      if (!canvas) return;
+      try {
+        canvas.toBlob(async (blob) => {
+          if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'treino-hiit.png', { type: 'image/png' })] })) {
+            const file = new File([blob], 'treino-hiit.png', { type: 'image/png' });
+            await navigator.share({
+              title: 'Meu Treino HIIT na Esteira 🏃⚡',
+              text: 'Confira meu resultado no HIIT Esteira!',
+              files: [file]
+            });
+          } else {
+            const link = document.createElement('a');
+            link.download = `hiit-esteira-treino-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          }
+        }, 'image/png');
+      } catch (e) {
+        console.log('Native share error:', e);
+      }
+    });
+  }
+
+  if (btnCopyText) {
+    btnCopyText.addEventListener('click', () => {
+      const w = currentShareWorkout || {};
+      const name = (state.userProfile && state.userProfile.name) ? state.userProfile.name : 'Atleta';
+      const txt = `🏃 HIIT NA ESTEIRA - TREINO CONCLUÍDO! ⚡\nAtleta: ${name}\nNível: ${w.preset || 'Iniciante'}\n⏱️ Tempo: ${formatTime(w.durationSec || 0)}\n📏 Distância: ${w.distanceKm ? w.distanceKm.toFixed(2) : '0.00'} km\n⚡ Pace Médio: ${w.avgPaceStr || '--'}\n🔥 Calorias: ~${w.calories || 0} kcal\n\nTreine também com o HIIT Esteira App!`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => {
+          btnCopyText.textContent = '✅ TEXTO COPIADO!';
+          setTimeout(() => { btnCopyText.textContent = '📋 COPIAR TEXTO DO TREINO'; }, 2000);
+        });
+      }
+    });
+  }
 
   const btnOpenProfile = document.getElementById('btnOpenProfile');
   const btnCloseProfile = document.getElementById('btnCloseProfile');

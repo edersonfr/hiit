@@ -54,12 +54,12 @@
 
 /* Screen Transitions */
 .screen {
-  display: none;
+  display: none !important;
   animation: fadeIn 0.3s ease-out forwards;
 }
 
 .screen.active {
-  display: flex;
+  display: flex !important;
 }
 
 @keyframes fadeIn {

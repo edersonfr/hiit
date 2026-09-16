@@ -385,7 +385,7 @@
     </main>
 
     <!-- SCREEN 2: ACTIVE WORKOUT TIMER -->
-    <main id="screenActive" class="screen flex-col gap-4 w-full">
+    <main id="screenActive" class="screen flex flex-col gap-4 w-full">
       <div class="active-workout-wrapper flex flex-col items-center gap-4 w-full">
         
         <!-- Phase Banner -->
@@ -455,13 +455,13 @@
     </main>
 
     <!-- SCREEN 3: WORKOUT SUMMARY / CONGRATS -->
-    <main id="screenSummary" class="screen flex-col gap-4 w-full">
+    <main id="screenSummary" class="screen flex flex-col gap-4 w-full">
       <div class="congrats-card bg-white border border-slate-200 rounded-3xl p-6 text-center flex flex-col items-center gap-4 shadow-lg shadow-slate-200/50">
         <div class="trophy-icon w-20 h-20 bg-gradient-to-tr from-amber-500 to-yellow-400 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
           <svg viewBox="0 0 24 24" class="w-10 h-10 fill-white"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 0 0 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
         </div>
         <div class="congrats-title font-heading font-black text-2xl text-slate-900">PARABÉNS! TREINO CONCLUÍDO!</div>
-        <div class="congrats-subtitle text-xs text-slate-500 font-medium" id="summarySubtext">Você completou seu treino HIIT com sucesso na esteira.</div>
+        <div class="congrats-subtitle text-xs text-slate-500 font-medium" id="summarySubtext">Você completou seu treino HIIT (<span id="summaryPreset" class="font-bold text-slate-700">Iniciante</span>) com sucesso na esteira.</div>
 
         <div class="summary-grid grid grid-cols-2 gap-2.5 w-full">
           <div class="summary-item bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
@@ -495,13 +495,13 @@
         </div>
 
         <!-- Workout Intensity & Speed Graph Card -->
-        <div class="workout-chart-card w-full bg-slate-900 text-white rounded-2xl p-4 mt-1">
+        <div class="workout-chart-card w-full bg-slate-900 text-white rounded-3xl p-4 mt-1 shadow-md overflow-hidden">
           <div class="chart-header flex flex-col items-start mb-2">
             <span class="chart-title font-heading font-extrabold text-sm text-white">📈 Perfil do Treino & Intensidades</span>
             <span class="chart-subtitle text-[11px] text-slate-400">Velocidade (km/h) ao longo do tempo</span>
           </div>
-          <div class="chart-canvas-wrapper bg-black/40 rounded-xl p-2">
-            <canvas id="summaryChartCanvas" width="440" height="200"></canvas>
+          <div class="chart-canvas-wrapper bg-black/40 rounded-2xl p-2 w-full overflow-hidden">
+            <canvas id="summaryChartCanvas" class="w-full h-auto block" height="180"></canvas>
           </div>
         </div>
 
@@ -524,7 +524,7 @@
     </main>
 
     <!-- SCREEN 4: DEDICATED HISTORY SCREEN -->
-    <main id="screenHistory" class="screen flex-col gap-4 w-full">
+    <main id="screenHistory" class="screen flex flex-col gap-4 w-full">
       <div class="history-screen-header flex items-center gap-3 mb-1">
         <button id="btnBackFromHistory" class="icon-btn w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-900 flex items-center justify-center shadow-sm" title="Voltar" aria-label="Voltar">
           <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
