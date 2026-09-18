@@ -1183,7 +1183,6 @@ function drawShareCanvas(workout) {
   ctx.font = '700 12px Inter, sans-serif';
   ctx.fillText('GERADO PELO HIIT ESTEIRA APP', w / 2, footerY + 24);
 }
-}
 
 // Native Share or Image Share
 async function shareWorkoutNative() {
@@ -1329,27 +1328,31 @@ function initApp() {
   }
 
   // Audio Toggle
-  document.getElementById('btnToggleAudio').addEventListener('click', () => {
+  document.getElementById('btnToggleAudio')?.addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
     const btn = document.getElementById('btnToggleAudio');
-    document.getElementById('iconAudioOn').style.display = state.soundEnabled ? 'inline' : 'none';
-    document.getElementById('iconAudioOff').style.display = state.soundEnabled ? 'none' : 'inline';
-    btn.classList.toggle('active', state.soundEnabled);
+    const iconOn = document.getElementById('iconAudioOn');
+    const iconOff = document.getElementById('iconAudioOff');
+    if (iconOn) iconOn.style.display = state.soundEnabled ? 'inline' : 'none';
+    if (iconOff) iconOff.style.display = state.soundEnabled ? 'none' : 'inline';
+    if (btn) btn.classList.toggle('active', state.soundEnabled);
     if (state.soundEnabled) playBeep321();
   });
 
   // Voice Toggle
-  document.getElementById('btnToggleVoice').addEventListener('click', () => {
+  document.getElementById('btnToggleVoice')?.addEventListener('click', () => {
     state.voiceEnabled = !state.voiceEnabled;
     const btn = document.getElementById('btnToggleVoice');
-    document.getElementById('iconVoiceOn').style.display = state.voiceEnabled ? 'inline' : 'none';
-    document.getElementById('iconVoiceOff').style.display = state.voiceEnabled ? 'none' : 'inline';
-    btn.classList.toggle('active', state.voiceEnabled);
+    const iconOn = document.getElementById('iconVoiceOn');
+    const iconOff = document.getElementById('iconVoiceOff');
+    if (iconOn) iconOn.style.display = state.voiceEnabled ? 'inline' : 'none';
+    if (iconOff) iconOff.style.display = state.voiceEnabled ? 'none' : 'inline';
+    if (btn) btn.classList.toggle('active', state.voiceEnabled);
     if (state.voiceEnabled) speakPrompt("Voz ativada");
   });
 
   // Quick Test Mode Checkbox
-  document.getElementById('chkQuickTest').addEventListener('change', (e) => {
+  document.getElementById('chkQuickTest')?.addEventListener('change', (e) => {
     state.quickTestMode = e.target.checked;
   });
 
@@ -1357,12 +1360,12 @@ function initApp() {
   const btnStart = document.getElementById('btnStartWorkout');
   if (btnStart) btnStart.addEventListener('click', startWorkout);
 
-  document.getElementById('btnNewWorkout').addEventListener('click', () => showScreen('screenSelect'));
+  document.getElementById('btnNewWorkout')?.addEventListener('click', () => showScreen('screenSelect'));
 
   // Timer Controls
-  document.getElementById('btnPauseResume').addEventListener('click', togglePauseResume);
-  document.getElementById('btnSkipStage').addEventListener('click', skipStage);
-  document.getElementById('btnStopWorkout').addEventListener('click', stopWorkout);
+  document.getElementById('btnPauseResume')?.addEventListener('click', togglePauseResume);
+  document.getElementById('btnSkipStage')?.addEventListener('click', skipStage);
+  document.getElementById('btnStopWorkout')?.addEventListener('click', stopWorkout);
 
   // History Screen Navigation Buttons
   const btnBackFromHistory = document.getElementById('btnBackFromHistory');
